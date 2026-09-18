@@ -32,10 +32,11 @@
           </div>
 
           <div class="flex items-center gap-3">
+            <!-- User Controls / Auth State -->
             <div id="auth-controls">
               <button onclick="openAuthModal()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs transition-all flex items-center gap-1.5">
                 <i data-lucide="lock" class="w-3.5 h-3.5 text-amber-400"></i>
-                <span>دخول مستخدم / مدير</span>
+                <span>دخول برقم الهاتف (SMS)</span>
               </button>
             </div>
 
@@ -50,6 +51,9 @@
     <!-- Main Layout -->
     <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
         
+        <!-- Admin Control Panel (Visible only to Admin) -->
+        <div id="admin-panel-container"></div>
+
         <!-- Video Player & Sidebar -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <!-- Main Video Stream -->
@@ -87,10 +91,10 @@
             </div>
             <div>
                 <label class="text-xs font-bold text-slate-400 block mb-1">رقم الهاتف (متبوعاً برمز الدولة):</label>
-                <input type="tel" id="user-phone-input" placeholder="+970590000000 أو +972..." class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs font-mono text-white focus:outline-none focus:border-amber-500" required>
+                <input type="tel" id="user-phone-input" placeholder="+966500000000 أو +972..." class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs font-mono text-white focus:outline-none focus:border-amber-500" required>
                 <span class="text-[10px] text-slate-500 block mt-1">للدخول كمدير، اكتب في الاسم: <strong>صاحب الموقع</strong></span>
             </div>
-            <button type="button" onclick="requestOtpCode()" class="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg">إرسال رمز التحقق (SMS) ➔</button>
+            <button type="button" onclick="requestOtpCode()" class="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg transition-all">إرسال رمز التحقق (SMS) ➔</button>
         </div>
 
         <!-- الخطوة الثانية: إدخال كود الـ OTP -->
@@ -100,12 +104,12 @@
             </div>
             <div>
                 <label class="text-xs font-bold text-slate-400 block mb-1">أدخل الرمز (6 أرقام):</label>
-                <input type="text" id="otp-code-input" placeholder="123456" maxlength="6" class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs font-mono text-center text-emerald-400 text-lg focus:outline-none focus:border-emerald-500" required>
+                <input type="text" id="otp-code-input" placeholder="123456" maxlength="6" class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs font-mono text-center text-emerald-400 text-lg tracking-widest focus:outline-none focus:border-emerald-500" required>
             </div>
-            <button type="button" onclick="verifyOtpCode()" class="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black text-xs shadow-lg">تأكيد الرمز والدخول ➔</button>
+            <button type="button" onclick="verifyOtpCode()" class="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black text-xs shadow-lg transition-all">تأكيد الرمز والدخول ➔</button>
         </div>
 
-        <!-- حاوية reCAPTCHA المخفية -->
+        <!-- حاوية reCAPTCHA المخفية لتأمين إرسال الرمز -->
         <div id="recaptcha-container"></div>
       </div>
     </div>
@@ -142,9 +146,9 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
-        import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, RecaptchaVerifier, signInWithPhoneNumber, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        // Firebase Configuration الخاصة بك
+        // Firebase Configuration الخاصة بمشروعك
         const firebaseConfig = {
           apiKey: "AIzaSyAChzyVbI2tYZH54i1bkaLqOkA8awbtXNs",
           authDomain: "gen-lang-client-0231249972.firebaseapp.com",
@@ -155,13 +159,13 @@
           measurementId: "G-MQ7G01PZY1"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const analytics = getAnalytics(app);
         const auth = getAuth(app);
 
         let currentRole = 'visitor'; // visitor, user, admin
         let userName = '';
+        let userPhone = '';
         let confirmationResultGlobal = null;
         
         let videos = [
@@ -187,6 +191,7 @@
             renderPlayer();
             renderSidebar();
             renderAuthControls();
+            renderAdminPanel();
             lucide.createIcons();
         }
 
@@ -253,43 +258,83 @@
         window.renderAuthControls = function() {
             const ctrl = document.getElementById('auth-controls');
             if (currentRole === 'visitor') {
-                ctrl.innerHTML = `<button onclick="openAuthModal()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs flex items-center gap-1.5">
-                    <i data-lucide="lock" class="w-3.5 h-3.5 text-amber-400"></i><span>دخول مستخدم / مدير</span>
+                ctrl.innerHTML = `<button onclick="openAuthModal()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs transition-all flex items-center gap-1.5">
+                    <i data-lucide="lock" class="w-3.5 h-3.5 text-amber-400"></i><span>دخول برقم الهاتف (SMS)</span>
                 </button>`;
             } else if (currentRole === 'admin') {
                 ctrl.innerHTML = `<div class="flex items-center gap-2">
                     <span class="px-3 py-1.5 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-black flex items-center gap-1">
-                        <i data-lucide="shield-check" class="w-4 h-4 text-amber-400"></i><span>المدير (صاحب الموقع)</span>
+                        <i data-lucide="shield-check" class="w-4 h-4 text-amber-400"></i><span>المدير (${userName || 'صاحب الموقع'})</span>
                     </span>
                     <button onclick="logout()" class="text-[10px] text-slate-500 hover:text-rose-400 underline">خروج</button>
                 </div>`;
             } else {
                 ctrl.innerHTML = `<div class="flex items-center gap-2">
-                    <span class="px-3 py-1.5 rounded-xl bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs font-bold">مستخدم مسجل</span>
+                    <span class="px-3 py-1.5 rounded-xl bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs font-bold">مستخدم: ${userName || userPhone}</span>
                     <button onclick="logout()" class="text-[10px] text-slate-500 hover:text-rose-400 underline">خروج</button>
                 </div>`;
             }
             lucide.createIcons();
         }
 
-        // إرسال رمز الـ SMS عبر Firebase Auth
+        window.renderAdminPanel = function() {
+            const container = document.getElementById('admin-panel-container');
+            if (currentRole !== 'admin') {
+                container.innerHTML = '';
+                return;
+            }
+
+            const pending = videos.filter(v => v.status === 'pending');
+            container.innerHTML = `
+                <div class="bg-slate-900 border-2 border-amber-500/40 rounded-3xl p-6 space-y-4 shadow-2xl">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="shield-check" class="w-6 h-6 text-amber-400"></i>
+                            <h3 class="text-lg font-black text-white">لوحة مراجعة وتدقيق الفيديوهات (صاحب الموقع)</h3>
+                        </div>
+                        <span class="text-xs font-bold text-slate-400">قيد الانتظار: <strong class="text-amber-400 font-mono">${pending.length}</strong></span>
+                    </div>
+                    ${pending.length === 0 ? '<p class="text-xs text-slate-400 text-center py-2">لا توجد مقاطع جديدة قيد الانتظار حالياً.</p>' : 
+                        `<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            ${pending.map(p => `
+                                <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+                                    <h4 class="text-sm font-bold text-white">${p.title}</h4>
+                                    <p class="text-[11px] text-slate-400">بواسطة: ${p.uploader}</p>
+                                    <div class="flex gap-2 pt-2">
+                                        <button onclick="approveVideo('${p.id}')" class="flex-1 py-1.5 rounded-xl bg-emerald-600 text-slate-950 font-black text-xs">قبول وبث</button>
+                                        <button onclick="rejectVideo('${p.id}')" class="py-1.5 px-3 rounded-xl bg-rose-600/20 text-rose-300 font-bold text-xs border border-rose-500/30">رفض وحذف</button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>`
+                    }
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        // إرسال رمز الـ SMS عبر Firebase Phone Auth
         window.requestOtpCode = function() {
             userName = document.getElementById('user-name-input').value.trim();
             const phoneNumber = document.getElementById('user-phone-input').value.trim();
 
             if (!phoneNumber) {
-                alert('الرجاء إدخال رقم الهاتف بصيغة دولية صحيحة (مثال: +970...)');
+                alert('الرجاء إدخال رقم الهاتف بصيغة دولية صحيحة (مثال: +9665...)');
                 return;
             }
+
+            userPhone = phoneNumber;
 
             if (userName === 'صاحب الموقع') {
                 currentRole = 'admin';
                 closeAuthModal();
                 renderAuthControls();
+                renderAdminPanel();
                 alert('مرحباً بك يا صاحب الموقع، تم تسجيل الدخول بصلاحيات الإدارة الكاملة!');
                 return;
             }
 
+            // إعداد reCAPTCHA المخفي تلقائياً
             if (!window.recaptchaVerifier) {
                 window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
                     'size': 'invisible'
@@ -302,18 +347,18 @@
                     confirmationResultGlobal = confirmationResult;
                     document.getElementById('auth-step-input').classList.add('hidden');
                     document.getElementById('auth-step-otp').classList.remove('hidden');
-                    alert('تم إرسال رمز التحقق بنجاح إلى هاتفك!');
+                    alert('تم إرسال رمز التحقق بنجاح إلى هاتفك عبر رسالة نصية (SMS)!');
                 }).catch((error) => {
-                    console.error("Error during auth:", error);
-                    alert('فشل إرسال الرمز: تأكد من صحة رقم الهاتف أو تفعيل الخدمة في فايربيس.');
+                    console.error("SMS Auth Error:", error);
+                    alert('فشل إرسال الرمز: تأكد من تفعيل Phone Auth في فايربيس وأن رقم الهاتف صحيح.');
                 });
         }
 
-        // تأكيد كود الـ OTP
+        // تأكيد رمز الـ SMS المكون من 6 أرقام
         window.verifyOtpCode = function() {
             const code = document.getElementById('otp-code-input').value.trim();
             if (!code || code.length !== 6) {
-                alert('الرجاء إدخال الرمز المكون من 6 أرقام بشكل صحيح.');
+                alert('الرجاء إدخال رمز التحقق المكون من 6 أرقام بشكل صحيح.');
                 return;
             }
 
@@ -321,10 +366,23 @@
                 currentRole = 'user';
                 closeAuthModal();
                 renderAuthControls();
-                alert('تم التحقق من رقم الهاتف بنجاح وسجلت الدخول للمنصة!');
+                alert(`مرحباً بك ${userName || 'المستخدم'}! تم التحقق من رقم هاتفك بنجاح.`);
             }).catch((error) => {
-                alert('رمز التحقق غير صحيح، حاول مرة أخرى.');
+                console.error("OTP Verify Error:", error);
+                alert('رمز التحقق غير صحيح أو انتهت صلاحيته، حاول مرة أخرى.');
             });
+        }
+
+        window.approveVideo = function(id) {
+            videos = videos.map(v => v.id === id ? { ...v, status: 'approved' } : v);
+            renderSidebar();
+            renderAdminPanel();
+        }
+
+        window.rejectVideo = function(id) {
+            videos = videos.filter(v => v.id !== id);
+            renderSidebar();
+            renderAdminPanel();
         }
 
         window.playVideo = function(id) {
@@ -357,8 +415,14 @@
         }
 
         window.logout = function() {
-            currentRole = 'visitor';
-            renderAuthControls();
+            signOut(auth).then(() => {
+                currentRole = 'visitor';
+                userName = '';
+                userPhone = '';
+                renderAuthControls();
+                renderAdminPanel();
+                alert('تم تسجيل الخروج بنجاح.');
+            });
         }
 
         window.handleUploadSubmit = function(e) {
@@ -367,33 +431,41 @@
             const url = document.getElementById('upload-url-input').value;
             const watermark = document.getElementById('upload-watermark-input').value;
 
+            const isDirectAdmin = currentRole === 'admin';
             const newVid = {
                 id: Date.now().toString(),
                 title: title,
                 surahName: 'مقطع مخصص',
                 category: 'قرآن وطبيعة',
                 views: '1',
-                uploader: currentRole === 'admin' ? 'صاحب الموقع' : (userName || 'مستخدم مسجل'),
+                uploader: isDirectAdmin ? 'صاحب الموقع (المدير)' : (userName || userPhone || 'مستخدم مسجل'),
                 thumbnail: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop&q=80',
                 videoUrl: url,
                 description: 'مقطع مرفوع بختم صحيح الموثوقة.',
                 watermarkText: watermark || 'صحيح',
-                status: 'approved'
+                status: isDirectAdmin ? 'approved' : 'pending'
             };
 
             videos.unshift(newVid);
-            activeVideo = newVid;
+            if (isDirectAdmin) activeVideo = newVid;
             closeUploadModal();
             renderPlayer();
             renderSidebar();
-            alert('تم رفع ونشر المقطع بنجاح مع ختم صحيح!');
+            renderAdminPanel();
+            
+            if (isDirectAdmin) {
+                alert('تم رفع ونشر المقطع بنجاح مع ختم صحيح!');
+            } else {
+                alert('تم إرسال المقطع إلى صاحب الموقع للمراجعة والتدقيق قبل النشر!');
+            }
         }
 
         window.deleteVideo = function(id) {
             videos = videos.filter(v => v.id !== id);
-            activeVideo = videos[0] || null;
+            activeVideo = videos.filter(v => v.status === 'approved')[0] || null;
             renderPlayer();
             renderSidebar();
+            renderAdminPanel();
         }
 
         window.onload = window.initApp;
