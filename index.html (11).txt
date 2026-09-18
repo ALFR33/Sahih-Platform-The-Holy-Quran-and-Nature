@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة صحيح القرآن الكريم والطبيعة</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+        body { font-family: 'Cairo', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen selection:bg-amber-500 selection:text-slate-950">
+
+    <!-- Header Bar -->
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 via-emerald-600 to-teal-500 flex items-center justify-center font-black text-slate-950 shadow-lg shadow-amber-500/20">
+              <i data-lucide="book-open" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h1 class="text-lg font-black text-white flex items-center gap-2">
+                <span>منصة صحيح القرآن الكريم والطبيعة</span>
+                <span class="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-extrabold">ختم صحيح ✨</span>
+              </h1>
+              <p class="text-[10px] text-slate-400">منصة المقاطع والتلاوات الخالصة بدون إعلانات</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <div id="auth-controls">
+              <button onclick="openAuthModal()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs transition-all flex items-center gap-1.5">
+                <i data-lucide="lock" class="w-3.5 h-3.5 text-amber-400"></i>
+                <span>دخول مستخدم / مدير</span>
+              </button>
+            </div>
+
+            <button onclick="handleMainUploadClick()" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-extrabold text-xs shadow-lg shadow-emerald-500/20 transition-all">
+              <i data-lucide="upload" class="w-4 h-4"></i>
+              <span>رفع مقطع جديد (بختم صحيح)</span>
+            </button>
+          </div>
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+    <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+        
+        <!-- Video Player & Sidebar -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <!-- Main Video Stream -->
+          <div class="lg:col-span-8 space-y-4">
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl" id="main-player-box"></div>
+          </div>
+
+          <!-- Videos Grid Sidebar -->
+          <div class="lg:col-span-4 space-y-3">
+            <h3 class="text-sm font-black text-white px-1 flex items-center justify-between">
+              <span>قائمة التلاوات والمقاطع المبثوثة</span>
+              <span class="text-xs font-bold text-emerald-400">ختم صحيح ✨</span>
+            </h3>
+            <div id="videos-sidebar-list" class="space-y-3"></div>
+          </div>
+        </div>
+    </main>
+
+    <!-- Auth Modal (Phone OTP Firebase) -->
+    <div id="auth-modal" class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <h3 class="text-base font-black text-white flex items-center gap-2">
+            <i data-lucide="lock" class="w-5 h-5 text-amber-400"></i>
+            <span>تسجيل الدخول برقم الجوال (رمز SMS)</span>
+          </h3>
+          <button onclick="closeAuthModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+
+        <!-- الخطوة الأولى: إدخال الرقم -->
+        <div id="auth-step-input" class="space-y-3">
+            <div>
+                <label class="text-xs font-bold text-slate-400 block mb-1">اسمك أو اسم قناتك:</label>
+                <input type="text" id="user-name-input" placeholder="مثال: القارئ أحمد..." class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs text-white focus:outline-none focus:border-amber-500">
+            </div>
+            <div>
+                <label class="text-xs font-bold text-slate-400 block mb-1">رقم الهاتف (متبوعاً برمز الدولة):</label>
+                <input type="tel" id="user-phone-input" placeholder="+970590000000 أو +972..." class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs font-mono text-white focus:outline-none focus:border-amber-500" required>
+                <span class="text-[10px] text-slate-500 block mt-1">للدخول كمدير، اكتب في الاسم: <strong>صاحب الموقع</strong></span>
+            </div>
+            <button type="button" onclick="requestOtpCode()" class="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg">إرسال رمز التحقق (SMS) ➔</button>
+        </div>
+
+        <!-- الخطوة الثانية: إدخال كود الـ OTP -->
+        <div id="auth-step-otp" class="hidden space-y-3">
+            <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs">
+                تم إرسال رسالة نصية تحتوي على رمز التحقق إلى رقم هاتفك.
+            </div>
+            <div>
+                <label class="text-xs font-bold text-slate-400 block mb-1">أدخل الرمز (6 أرقام):</label>
+                <input type="text" id="otp-code-input" placeholder="123456" maxlength="6" class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs font-mono text-center text-emerald-400 text-lg focus:outline-none focus:border-emerald-500" required>
+            </div>
+            <button type="button" onclick="verifyOtpCode()" class="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black text-xs shadow-lg">تأكيد الرمز والدخول ➔</button>
+        </div>
+
+        <!-- حاوية reCAPTCHA المخفية -->
+        <div id="recaptcha-container"></div>
+      </div>
+    </div>
+
+    <!-- Upload Modal -->
+    <div id="upload-modal" class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <h3 class="text-base font-black text-white">رفع مقطع فيديو جديد بختم "صحيح"</h3>
+          <button onclick="closeUploadModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <form onsubmit="handleUploadSubmit(event)" class="space-y-3">
+          <div>
+            <label class="text-xs font-bold text-slate-400 block mb-1">رابط فيديو مباشر (MP4):</label>
+            <input type="text" id="upload-url-input" value="https://vjs.zencdn.net/v/oceans.mp4" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-500" required>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-400 block mb-1">عنوان المقطع والتلاوة:</label>
+            <input type="text" id="upload-title-input" placeholder="أدخل اسم السورة أو المقطع..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-500" required>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-400 block mb-1">نص العلامة المائية:</label>
+            <input type="text" id="upload-watermark-input" value="صحيح" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-500">
+          </div>
+          <div class="flex gap-2 pt-2">
+            <button type="submit" class="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black text-xs shadow-md">رفع ونشر المقطع</button>
+            <button type="button" onclick="closeUploadModal()" class="w-full py-3 rounded-2xl bg-slate-800 text-slate-300 font-bold text-xs">إلغاء</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Firebase SDKs & App Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+        import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        // Firebase Configuration الخاصة بك
+        const firebaseConfig = {
+          apiKey: "AIzaSyAChzyVbI2tYZH54i1bkaLqOkA8awbtXNs",
+          authDomain: "gen-lang-client-0231249972.firebaseapp.com",
+          projectId: "gen-lang-client-0231249972",
+          storageBucket: "gen-lang-client-0231249972.firebasestorage.app",
+          messagingSenderId: "360411448313",
+          appId: "1:360411448313:web:d6739d661df7943ec3f328",
+          measurementId: "G-MQ7G01PZY1"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth(app);
+
+        let currentRole = 'visitor'; // visitor, user, admin
+        let userName = '';
+        let confirmationResultGlobal = null;
+        
+        let videos = [
+            {
+                id: '1',
+                title: 'تلاوة خاشعة سورة الرحمن - بصوت نقي',
+                surahName: 'سورة الرحمن',
+                category: 'قرآن وطبيعة',
+                views: '1,420',
+                uploader: 'صاحب الموقع (المدير)',
+                thumbnail: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop&q=80',
+                videoUrl: 'https://vjs.zencdn.net/v/oceans.mp4',
+                description: 'مقطع تلاوة عطرة مرفوع بختم علامة صحيح الموثوقة بدون إعلانات.',
+                watermarkText: 'صحيح',
+                status: 'approved'
+            }
+        ];
+
+        let activeVideo = videos[0];
+        let isMuted = true;
+
+        window.initApp = function() {
+            renderPlayer();
+            renderSidebar();
+            renderAuthControls();
+            lucide.createIcons();
+        }
+
+        window.renderPlayer = function() {
+            const box = document.getElementById('main-player-box');
+            if (!activeVideo) {
+                box.innerHTML = `<div class="p-12 text-center space-y-4">
+                    <h3 class="text-xl font-black text-white">مرحباً بك في منصة صحيح القرآن الكريم والطبيعة 🌿📖</h3>
+                    <p class="text-xs text-slate-400">اختر مقطعاً من القائمة أو ارفع مقطعك الخاص بختم صحيح.</p>
+                </div>`;
+                return;
+            }
+
+            box.innerHTML = `
+                <div class="relative aspect-video bg-black flex items-center justify-center overflow-hidden">
+                    <video id="active-video-element" src="${activeVideo.videoUrl}" controls autoplay playsinline loop ${isMuted ? 'muted' : ''} class="w-full h-full object-contain"></video>
+                    
+                    <!-- Watermark Badge -->
+                    <div class="absolute z-20 bottom-4 right-4 px-4 py-2 bg-slate-950/90 backdrop-blur-lg border border-amber-500/50 rounded-2xl shadow-2xl flex items-center gap-2 pointer-events-none">
+                      <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400 shrink-0"></i>
+                      <span class="text-amber-300 font-black text-xs">ختم موثق:</span>
+                      <span class="text-white font-extrabold text-base">${activeVideo.watermarkText || 'صحيح'}</span>
+                    </div>
+
+                    <!-- Mute Toggle -->
+                    <button onclick="toggleMute()" class="absolute top-4 left-4 z-30 p-2.5 rounded-2xl bg-slate-950/80 text-white border border-slate-700 text-xs font-bold flex items-center gap-1.5 shadow-xl">
+                      ${isMuted ? '<i data-lucide="volume-x" class="w-4 h-4 text-rose-400"></i><span>إلغاء الكتم 🔊</span>' : '<i data-lucide="volume-2" class="w-4 h-4 text-emerald-400"></i><span>الصوت يعمل 🔊</span>'}
+                    </button>
+                </div>
+                <div class="p-6 space-y-3">
+                    <div class="flex items-center justify-between">
+                      <h2 class="text-xl font-black text-white">${activeVideo.title}</h2>
+                      <span class="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-extrabold">${activeVideo.surahName}</span>
+                    </div>
+                    <div class="flex items-center justify-between text-xs text-slate-400 border-b border-slate-800 pb-3">
+                      <span>الناشر: <strong class="text-slate-200">${activeVideo.uploader}</strong> • ${activeVideo.views} مشاهدة</span>
+                      <button onclick="deleteVideo('${activeVideo.id}')" class="p-2 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/30"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">${activeVideo.description}</p>
+                </div>`;
+            lucide.createIcons();
+        }
+
+        window.renderSidebar = function() {
+            const list = document.getElementById('videos-sidebar-list');
+            const approved = videos.filter(v => v.status === 'approved');
+            
+            list.innerHTML = approved.map(vid => `
+                <div onclick="playVideo('${vid.id}')" class="p-2.5 rounded-2xl border transition-all cursor-pointer flex gap-3 ${activeVideo?.id === vid.id ? 'bg-slate-800 border-amber-500 shadow-lg' : 'bg-slate-900 border-slate-800 hover:bg-slate-800/60'}">
+                    <div class="relative w-28 h-20 rounded-xl overflow-hidden shrink-0 bg-slate-950">
+                      <img src="${vid.thumbnail}" alt="${vid.title}" class="w-full h-full object-cover">
+                      <span class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-slate-950/90 text-[9px] font-black text-amber-300 border border-amber-500/40">صحيح</span>
+                    </div>
+                    <div class="space-y-1 flex-1">
+                      <h4 class="text-xs font-black text-white line-clamp-2">${vid.title}</h4>
+                      <div class="text-[10px] text-emerald-400 font-bold">${vid.surahName}</div>
+                      <div class="text-[10px] text-slate-400">${vid.views} مشاهدة</div>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        window.renderAuthControls = function() {
+            const ctrl = document.getElementById('auth-controls');
+            if (currentRole === 'visitor') {
+                ctrl.innerHTML = `<button onclick="openAuthModal()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs flex items-center gap-1.5">
+                    <i data-lucide="lock" class="w-3.5 h-3.5 text-amber-400"></i><span>دخول مستخدم / مدير</span>
+                </button>`;
+            } else if (currentRole === 'admin') {
+                ctrl.innerHTML = `<div class="flex items-center gap-2">
+                    <span class="px-3 py-1.5 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-black flex items-center gap-1">
+                        <i data-lucide="shield-check" class="w-4 h-4 text-amber-400"></i><span>المدير (صاحب الموقع)</span>
+                    </span>
+                    <button onclick="logout()" class="text-[10px] text-slate-500 hover:text-rose-400 underline">خروج</button>
+                </div>`;
+            } else {
+                ctrl.innerHTML = `<div class="flex items-center gap-2">
+                    <span class="px-3 py-1.5 rounded-xl bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs font-bold">مستخدم مسجل</span>
+                    <button onclick="logout()" class="text-[10px] text-slate-500 hover:text-rose-400 underline">خروج</button>
+                </div>`;
+            }
+            lucide.createIcons();
+        }
+
+        // إرسال رمز الـ SMS عبر Firebase Auth
+        window.requestOtpCode = function() {
+            userName = document.getElementById('user-name-input').value.trim();
+            const phoneNumber = document.getElementById('user-phone-input').value.trim();
+
+            if (!phoneNumber) {
+                alert('الرجاء إدخال رقم الهاتف بصيغة دولية صحيحة (مثال: +970...)');
+                return;
+            }
+
+            if (userName === 'صاحب الموقع') {
+                currentRole = 'admin';
+                closeAuthModal();
+                renderAuthControls();
+                alert('مرحباً بك يا صاحب الموقع، تم تسجيل الدخول بصلاحيات الإدارة الكاملة!');
+                return;
+            }
+
+            if (!window.recaptchaVerifier) {
+                window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+                    'size': 'invisible'
+                });
+            }
+
+            const appVerifier = window.recaptchaVerifier;
+            signInWithPhoneNumber(auth, phoneNumber, appVerifier)
+                .then((confirmationResult) => {
+                    confirmationResultGlobal = confirmationResult;
+                    document.getElementById('auth-step-input').classList.add('hidden');
+                    document.getElementById('auth-step-otp').classList.remove('hidden');
+                    alert('تم إرسال رمز التحقق بنجاح إلى هاتفك!');
+                }).catch((error) => {
+                    console.error("Error during auth:", error);
+                    alert('فشل إرسال الرمز: تأكد من صحة رقم الهاتف أو تفعيل الخدمة في فايربيس.');
+                });
+        }
+
+        // تأكيد كود الـ OTP
+        window.verifyOtpCode = function() {
+            const code = document.getElementById('otp-code-input').value.trim();
+            if (!code || code.length !== 6) {
+                alert('الرجاء إدخال الرمز المكون من 6 أرقام بشكل صحيح.');
+                return;
+            }
+
+            confirmationResultGlobal.confirm(code).then((result) => {
+                currentRole = 'user';
+                closeAuthModal();
+                renderAuthControls();
+                alert('تم التحقق من رقم الهاتف بنجاح وسجلت الدخول للمنصة!');
+            }).catch((error) => {
+                alert('رمز التحقق غير صحيح، حاول مرة أخرى.');
+            });
+        }
+
+        window.playVideo = function(id) {
+            const found = videos.find(v => v.id === id);
+            if (found) {
+                activeVideo = found;
+                renderPlayer();
+                renderSidebar();
+            }
+        }
+
+        window.toggleMute = function() {
+            isMuted = !isMuted;
+            const vidEl = document.getElementById('active-video-element');
+            if (vidEl) vidEl.muted = isMuted;
+            renderPlayer();
+        }
+
+        window.openAuthModal = function() { document.getElementById('auth-modal').classList.remove('hidden'); }
+        window.closeAuthModal = function() { document.getElementById('auth-modal').classList.add('hidden'); }
+        window.openUploadModal = function() { document.getElementById('upload-modal').classList.remove('hidden'); }
+        window.closeUploadModal = function() { document.getElementById('upload-modal').classList.add('hidden'); }
+
+        window.handleMainUploadClick = function() {
+            if (currentRole === 'visitor') {
+                openAuthModal();
+            } else {
+                openUploadModal();
+            }
+        }
+
+        window.logout = function() {
+            currentRole = 'visitor';
+            renderAuthControls();
+        }
+
+        window.handleUploadSubmit = function(e) {
+            e.preventDefault();
+            const title = document.getElementById('upload-title-input').value;
+            const url = document.getElementById('upload-url-input').value;
+            const watermark = document.getElementById('upload-watermark-input').value;
+
+            const newVid = {
+                id: Date.now().toString(),
+                title: title,
+                surahName: 'مقطع مخصص',
+                category: 'قرآن وطبيعة',
+                views: '1',
+                uploader: currentRole === 'admin' ? 'صاحب الموقع' : (userName || 'مستخدم مسجل'),
+                thumbnail: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop&q=80',
+                videoUrl: url,
+                description: 'مقطع مرفوع بختم صحيح الموثوقة.',
+                watermarkText: watermark || 'صحيح',
+                status: 'approved'
+            };
+
+            videos.unshift(newVid);
+            activeVideo = newVid;
+            closeUploadModal();
+            renderPlayer();
+            renderSidebar();
+            alert('تم رفع ونشر المقطع بنجاح مع ختم صحيح!');
+        }
+
+        window.deleteVideo = function(id) {
+            videos = videos.filter(v => v.id !== id);
+            activeVideo = videos[0] || null;
+            renderPlayer();
+            renderSidebar();
+        }
+
+        window.onload = window.initApp;
+    </script>
+</body>
+</html>
