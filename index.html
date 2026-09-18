@@ -1,313 +1,392 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>منصة صحيح القرآن الكريم والطبيعة 🌿📖</title>
-
-  <!-- خط القاهرة -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: { fontFamily: { sans: ['Cairo', 'sans-serif'] } }
-      }
-    }
-  </script>
-
-  <style>
-    body { font-family: 'Cairo', sans-serif; background-color: #020617; color: #f8fafc; }
-    ::-webkit-scrollbar { width: 8px; }
-    ::-webkit-scrollbar-track {}34155; border-radius: 4px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة صحيح القرآن الكريم والطبيعة</title>
+    <!-- Google AdMob Script -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-app-pub-2244311957196913" crossorigin="anonymous"></script>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+        body { font-family: 'Cairo', sans-serif; }
+    </style>
 </head>
-<body class="bg-slate-950 text-slate-100 dir-rtl text-right min-h-screen">
+<body class="bg-slate-950 text-slate-100 min-h-screen selection:bg-amber-500 selection:text-slate-950">
 
-  <!-- الهيدر العلوي -->
-  <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur-md sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-      <div className="flex items-center gap-3">
-        <h1 class="text-base font-black text-white flex items-center gap-2">
-          <span>منصة صحيح القرآن الكريم والطبيعة 🌿</span>
-          <span class="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold">ختم صحيح ✨</span>
-        </h1>
-      </div>
-
-      <div class="flex items-center gap-3">
-        <button id="loginBtn" onclick="toggleAuthModal()" class="px-3.5 py-2 rounded-xl bg-slate-800 text-slate-200 text-xs font-bold border border-slate-700 hover:bg-slate-700">
-          دخول (مستخدم / صاحب الموقع)
-        </button>
-
-        <button id="adminPanelBtn" onclick="toggleAdminPanel()" class="hidden px-3.5 py-2 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold flex items-center gap-1">
-          🛡️ لوحة صاحب الموقع (<span id="pendingBadge">0</span>)
-        </button>
-
-        <button onclick="toggleUploadModal()" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs shadow-lg">
-          📤 رفع مقطع جديد
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
-
-    <!-- لوحة مراجعة صاحب الموقع -->
-    <div id="adminPanel" class="hidden bg-slate-900 border-2 border-amber-500/40 rounded-3xl p-6 space-y-4">
-      <h3 class="text-base font-black text-white flex items-center gap-2">
-        <span>🛡️ لوحة مراجعة المقاطع الواردة (صاحب الموقع)</span>
-      </h3>
-      <div id="pendingList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-    </div>
-
-    <!-- مشغل الفيديو والقائمة -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-      
-      <!-- المشغل الرئيسي -->
-      <div class="lg:col-span-8 bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl">
-        <div id="playerContainer" class="hidden relative aspect-video bg-black flex items-center justify-center">
-          <video id="mainVideo" controls autoplay loop class="w-full h-full object-contain"></video>
-
-          <!-- الختم العائم على الفيديو -->
-          <div id="watermarkBadge" class="absolute bottom-4 right-4 px-4 py-2 bg-slate-950/90 backdrop-blur-md border border-amber-500/50 rounded-2xl flex items-center gap-2 pointer-events-none">
-            <span class="text-emerald-400 font-bold">✓</span>
-            <span class="text-amber-300 font-black text-xs">ختم موثق:</span>
-            <span id="watermarkText" class="text-white font-extrabold text-sm">صحيح</span>
+    <!-- Header Bar -->
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 via-emerald-600 to-teal-500 flex items-center justify-center font-black text-slate-950 shadow-lg shadow-amber-500/20">
+              <i data-lucide="book-open" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h1 class="text-lg font-black text-white flex items-center gap-2">
+                <span>منصة صحيح القرآن الكريم والطبيعة</span>
+                <span class="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-extrabold">ختم صحيح ✨</span>
+              </h1>
+              <p class="text-[10px] text-slate-400">منصة المقاطع والتلاوات الخالصة</p>
+            </div>
           </div>
-        </div>
 
-        <div id="emptyState" class="p-12 text-center space-y-3">
-          <h3 class="text-xl font-black text-white">مرحباً بك في منصة صحيح 🌿📖</h3>
-          <p class="text-xs text-slate-400 max-w-md mx-auto">اضغط على زر "رفع مقطع جديد" بالنقر أعلاه لنشر أول مقطع فيديو وتلاوة من جهازك بختم علامة صحيح.</p>
-        </div>
+          <div class="flex items-center gap-3">
+            <!-- User Controls / Auth State -->
+            <div id="auth-controls">
+              <button onclick="openAuthModal()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs transition-all flex items-center gap-1.5">
+                <i data-lucide="lock" class="w-3.5 h-3.5 text-amber-400"></i>
+                <span>دخول برقم الهاتف (SMS)</span>
+              </button>
+            </div>
 
-        <!-- معلومات المقطع وتنزيله -->
-        <div id="videoMeta" class="hidden p-6 border-t border-slate-800 flex items-center justify-between">
-          <div>
-            <h2 id="videoTitle" class="text-lg font-black text-white"></h2>
-            <p id="videoUploader" class="text-xs text-slate-400 mt-1"></p>
-          </div>
-          <button onclick="downloadActiveVideo()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black text-xs rounded-xl flex items-center gap-1 shadow-md">
-            ⬇️ تنزيل المقطع الموثق
-          </button>
-        </div>
-      </div>
-
-      <!-- قائمة الفيديوهات -->
-      <div class="lg:col-span-4 space-y-3">
-        <h3 class="text-sm font-black text-white">المقاطع المبثوثة والمقبولة</h3>
-        <div id="approvedList" class="space-y-3"></div>
-      </div>
-
-    </div>
-  </main>
-
-  <!-- مودال تسجيل الدخول -->
-  <div id="authModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full space-y-4">
-      <h3 class="text-sm font-black text-white">تسجيل الدخول / صاحب الموقع</h3>
-      <form onsubmit="handleAuth(event)" class="space-y-3">
-        <input id="authInput" type="text" placeholder="رقم الهاتف أو اكتب 'صاحب الموقع'..." class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500" required />
-        <button type="submit" class="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs rounded-xl">دخول ➔</button>
-      </form>
-      <button onclick="toggleAuthModal()" class="w-full py-2 bg-slate-800 text-slate-400 text-xs rounded-xl">إلغاء</button>
-    </div>
-  </div>
-
-  <!-- مودال الرفع -->
-  <div id="uploadModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full space-y-4">
-      <h3 class="text-sm font-black text-white">رفع مقطع فيديو بختم صحيح</h3>
-      <form onsubmit="handleUpload(event)" class="space-y-3">
-        <input id="fileInput" type="file" accept="video/*" class="w-full text-xs text-slate-300" required />
-        <input id="titleInput" type="text" placeholder="عنوان المقطع أو السورة..." class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white" required />
-        <input id="watermarkInput" type="text" value="صحيح" placeholder="نص الختم المائي..." class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white" />
-        <button type="submit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black text-xs rounded-xl">رفع المقطع الآن ➔</button>
-      </form>
-      <button onclick="toggleUploadModal()" class="w-full py-2 bg-slate-800 text-slate-400 text-xs rounded-xl">إلغاء</button>
-    </div>
-  </div>
-
-  <!-- مودال إشعار النجاح -->
-  <div id="noticeModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-emerald-500/50 rounded-3xl p-6 max-w-sm w-full space-y-4 text-center">
-      <h3 class="text-base font-black text-white">تم إرسال المقطع بنجاح! 📥</h3>
-      <p id="noticeText" class="text-xs text-slate-300 leading-relaxed"></p>
-      <button onclick="loginAsAdminInstant()" class="w-full py-3 bg-gradient-to-r from-amber-500 to-emerald-500 text-slate-950 font-black text-xs rounded-xl shadow-lg">
-        الدخول الآن كـ (صاحب الموقع) للموافقة ➔
-      </button>
-    </div>
-  </div>
-
-  <!-- JavaScript البرمجة الكاملة بدون أي مكتبات فرعية -->
-  <script>
-    let videos = JSON.parse(localStorage.getItem("sahih_videos_v2") || "[]");
-    let activeVideo = null;
-    let currentUserRole = "visitor"; // 'visitor' | 'user' | 'admin'
-
-    function saveVideos() {
-      localStorage.setItem("sahih_videos_v2", JSON.stringify(videos));
-      render();
-    }
-
-    function toggleAuthModal() {
-      document.getElementById("authModal").classList.toggle("hidden");
-    }
-
-    function toggleUploadModal() {
-      document.getElementById("uploadModal").classList.toggle("hidden");
-    }
-
-    function toggleAdminPanel() {
-      document.getElementById("adminPanel").classList.toggle("hidden");
-    }
-
-    function handleAuth(e) {
-      e.preventDefault();
-      const val = document.getElementById("authInput").value.trim();
-      if (val.toLowerCase().includes("admin") || val === "صاحب الموقع") {
-        currentUserRole = "admin";
-        document.getElementById("adminPanelBtn").classList.remove("hidden");
-        document.getElementById("adminPanel").classList.remove("hidden");
-      } else {
-        currentUserRole = "user";
-      }
-      document.getElementById("loginBtn").innerText = "حسابي (" + (currentUserRole === 'admin' ? 'صاحب الموقع' : 'مستخدم') + ")";
-      toggleAuthModal();
-      render();
-    }
-
-    function loginAsAdminInstant() {
-      currentUserRole = "admin";
-      document.getElementById("adminPanelBtn").classList.remove("hidden");
-      document.getElementById("adminPanel").classList.remove("hidden");
-      document.getElementById("loginBtn").innerText = "حسابي (صاحب الموقع)";
-      document.getElementById("noticeModal").classList.add("hidden");
-      render();
-    }
-
-    function handleUpload(e) {
-      e.preventDefault();
-      const fileInput = document.getElementById("fileInput");
-      const titleInput = document.getElementById("titleInput");
-      const watermarkInput = document.getElementById("watermarkInput");
-
-      if (!fileInput.files[0]) return;
-
-      const file = fileInput.files[0];
-      const videoUrl = URL.createObjectURL(file);
-
-      const isAdmin = currentUserRole === 'admin';
-      const newVid = {
-        id: Date.now().toString(),
-        title: titleInput.value.trim(),
-        uploader: isAdmin ? "صاحب الموقع (المدير)" : "مستخدم مسجل",
-        videoUrl: videoUrl,
-        watermarkText: watermarkInput.value.trim() || "صحيح",
-        status: isAdmin ? 'approved' : 'pending'
-      };
-
-      videos.unshift(newVid);
-      saveVideos();
-
-      toggleUploadModal();
-      fileInput.value = "";
-      titleInput.value = "";
-
-      if (isAdmin) {
-        setActive(newVid);
-      } else {
-        document.getElementById("noticeText").innerText = `تم إرسال المقطع "${newVid.title}" بنجاح إلى لوحة مراجعة صاحب الموقع!`;
-        document.getElementById("noticeModal").classList.remove("hidden");
-      }
-    }
-
-    function approveVideo(id) {
-      const vid = videos.find(v => v.id === id);
-      if (vid) {
-        vid.status = 'approved';
-        saveVideos();
-        setActive(vid);
-      }
-    }
-
-    function setActive(vid) {
-      activeVideo = vid;
-      const playerContainer = document.getElementById("playerContainer");
-      const emptyState = document.getElementById("emptyState");
-      const videoMeta = document.getElementById("videoMeta");
-      const mainVideo = document.getElementById("mainVideo");
-
-      playerContainer.classList.remove("hidden");
-      emptyState.classList.add("hidden");
-      videoMeta.classList.remove("hidden");
-
-      mainVideo.src = vid.videoUrl;
-      mainVideo.play().catch(() => {});
-
-      document.getElementById("watermarkText").innerText = vid.watermarkText;
-      document.getElementById("videoTitle").innerText = vid.title;
-      document.getElementById("videoUploader").innerText = "الناشر: " + vid.uploader;
-    }
-
-    function downloadActiveVideo() {
-      if (!activeVideo) return;
-      const a = document.createElement("a");
-      a.href = activeVideo.videoUrl;
-      a.download = `${activeVideo.title}-صحيح.mp4`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    }
-
-    function render() {
-      const approvedList = document.getElementById("approvedList");
-      const pendingList = document.getElementById("pendingList");
-      const pendingBadge = document.getElementById("pendingBadge");
-
-      const approved = videos.filter(v => v.status === 'approved');
-      const pending = videos.filter(v => v.status === 'pending');
-
-      pendingBadge.innerText = pending.length;
-
-      // رسم القائمة المقبولة
-      if (approved.length === 0) {
-        approvedList.innerHTML = `<div class="p-6 text-center border border-dashed border-slate-800 rounded-2xl text-xs text-slate-500">لا توجد مقاطع مقبولة حالياً. انقر رفع مقطع للبدء!</div>`;
-      } else {
-        approvedList.innerHTML = approved.map(v => `
-          <div onclick='setActiveById("${v.id}")' class="p-3.5 rounded-2xl border ${activeVideo?.id === v.id ? 'bg-slate-800 border-amber-500' : 'bg-slate-900 border-slate-800'} cursor-pointer flex justify-between items-center<span class="text-xs font-bold text-white">${v.title}</span>
-            <span class="text-[10px] text-emerald-400 font-black">ختم صحيح ✨</span>
-          </div>
-        `).join("");
-      }
-
-      // رسم لوحة المشرف
-      if (pending.length === 0) {
-        pendingList.innerHTML = `<p class="text-xs text-slate-400 col-span-2 text-center py-2">لا توجد مقاطع جديدة بانتظار الموافقة.</p>`;
-      } else {
-        pendingList.innerHTML = pending.map(pv => `
-          <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
-            <h4 class="text-xs font-black text-white">${pv.title}</h4>
-            <button onclick="approveVideo('${pv.id}')" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black text-xs rounded-xl shadow-md">
-              قبول وبث المقطع للجميع ➔
+            <button onclick="handleMainUploadClick()" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-extrabold text-xs shadow-lg shadow-emerald-500/20 transition-all">
+              <i data-lucide="upload" class="w-4 h-4"></i>
+              <span>رفع مقطع جديد (بختم صحيح)</span>
             </button>
           </div>
-        `).join("");
-      }
-    }
+        </div>
+    </header>
 
-    function setActiveById(id) {
-      const vid = videos.find(v => v.id === id);
-      if (vid) setActive(vid);
-    }
+    <!-- Main Layout -->
+    <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+        
+        <!-- Admin Control Panel (Visible only to Admin) -->
+        <div id="admin-panel-container"></div>
 
-    // التشغيل الأولي
-    render();
-  </script>
+        <!-- Video Player & Sidebar -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <!-- Main Video Stream -->
+          <div class="lg:col-span-8 space-y-4">
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl" id="main-player-box"></div>
+
+            <!-- AdMob Banner Container Area -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-3xl p-4 text-center space-y-2 shadow-xl">
+                <div class="text-[10px] text-slate-400">إعلان تجاري موجه لرفع الأرباح (AdMob)</div>
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="ca-app-pub-2244311957196913"
+                     data-ad-slot="1262486446"
+                     data-ad-format="auto"
+                     data-full-width-responsive="true"></ins>
+                <script>
+                     (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+            </div>
+          </div>
+
+          <!-- Videos Grid Sidebar -->
+          <div class="lg:col-span-4 space-y-3">
+            <h3 class="text-sm font-black text-white px-1 flex items-center justify-between">
+              <span>قائمة التلاوات والمقاطع المبثوثة</span>
+              <span class="text-xs font-bold text-emerald-400">ختم صحيح ✨</span>
+            </h3>
+            <div id="videos-sidebar-list" class="space-y-3"></div>
+          </div>
+        </div>
+    </main>
+
+    <!-- Auth Modal (Phone OTP Firebase) -->
+    <div id="auth-modal" class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <h3 class="text-base font-black text-white flex items-center gap-2">
+            <i data-lucide="lock" class="w-5 h-5 text-amber-400"></i>
+            <span>تسجيل الدخول برقم الجوال (رمز SMS)</span>
+          </h3>
+          <button onclick="closeAuthModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+
+        <div id="auth-step-input" class="space-y-3">
+            <div>
+                <label class="text-xs font-bold text-slate-400 block mb-1">اسمك أو اسم قناتك:</label>
+                <input type="text" id="user-name-input" placeholder="مثال: القارئ أحمد..." class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs text-white focus:outline-none focus:border-amber-500">
+            </div>
+            <div>
+                <label class="text-xs font-bold text-slate-400 block mb-1">رقم الهاتف (متبوعاً برمز الدولة):</label>
+                <input type="tel" id="user-phone-input" placeholder="+966500000000 أو +972..." class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs font-mono text-white focus:outline-none focus:border-amber-500" required>
+                <span class="text-[10px] text-slate-500 block mt-1">للدخول كمدير، اكتب في الاسم: <strong>صاحب الموقع</strong></span>
+            </div>
+            <button type="button" onclick="requestOtpCode()" class="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg transition-all">إرسال رمز التحقق (SMS) ➔</button>
+        </div>
+
+        <div id="auth-step-otp" class="hidden space-y-3">
+            <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs">
+                تم إرسال رسالة نصية تحتوي على رمز التحقق إلى رقم هاتفك.
+            </div>
+            <div>
+                <label class="text-xs font-bold text-slate-400 block mb-1">أدخل الرمز (6 أرقام):</label>
+                <input type="text" id="otp-code-input" placeholder="123456" maxlength="6" class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs font-mono text-center text-emerald-400 text-lg tracking-widest focus:outline-none focus:border-emerald-500" required>
+            </div>
+            <button type="button" onclick="verifyOtpCode()" class="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black text-xs shadow-lg transition-all">تأكيد الرمز والدخول ➔</button>
+        </div>
+
+        <div id="recaptcha-container"></div>
+      </div>
+    </div>
+
+    <!-- Upload Modal -->
+    <div id="upload-modal" class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <h3 class="text-base font-black text-white">رفع مقطع فيديو جديد بختم "صحيح"</h3>
+          <button onclick="closeUploadModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <form onsubmit="handleUploadSubmit(event)" class="space-y-3">
+          <div>
+            <label class="text-xs font-bold text-slate-400 block mb-1">رابط فيديو مباشر (MP4):</label>
+            <input type="text" id="upload-url-input" value="https://vjs.zencdn.net/v/oceans.mp4" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-500" required>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-400 block mb-1">عنوان المقطع والتلاوة:</label>
+            <input type="text" id="upload-title-input" placeholder="أدخل اسم السورة أو المقطع..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-500" required>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-400 block mb-1">نص العلامة المائية:</label>
+            <input type="text" id="upload-watermark-input" value="صحيح" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-500">
+          </div>
+          <div class="flex gap-2 pt-2">
+            <button type="submit" class="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black text-xs shadow-md">رفع ونشر المقطع</button>
+            <button type="button" onclick="closeUploadModal()" class="w-full py-3 rounded-2xl bg-slate-800 text-slate-300 font-bold text-xs">إلغاء</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Firebase & App Script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+        import { getAuth, RecaptchaVerifier, signInWithPhoneNumber, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyAChzyVbI2tYZH54i1bkaLqOkA8awbtXNs",
+          authDomain: "gen-lang-client-0231249972.firebaseapp.com",
+          projectId: "gen-lang-client-0231249972",
+          storageBucket: "gen-lang-client-0231249972.firebasestorage.app",
+          messagingSenderId: "360411448313",
+          appId: "1:360411448313:web:d6739d661df7943ec3f328",
+          measurementId: "G-MQ7G01PZY1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        let currentRole = 'visitor';
+        let userName = '';
+        let userPhone = '';
+        let confirmationResultGlobal = null;
+        
+        let videos = [
+            {
+                id: '1',
+                title: 'تلاوة خاشعة سورة الرحمن - بصوت نقي',
+                surahName: 'سورة الرحمن',
+                category: 'قرآن وطبيعة',
+                views: '1,420',
+                uploader: 'صاحب الموقع (المدير)',
+                thumbnail: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop&q=80',
+                videoUrl: 'https://vjs.zencdn.net/v/oceans.mp4',
+                description: 'مقطع تلاوة عطرة مرفوع بختم علامة صحيح الموثوقة بدون إعلانات مزعجة.',
+                watermarkText: 'صحيح',
+                status: 'approved'
+            }
+        ];
+
+        let activeVideo = videos[0];
+        let isMuted = true;
+
+        window.initApp = function() {
+            renderPlayer();
+            renderSidebar();
+            renderAuthControls();
+            renderAdminPanel();
+            lucide.createIcons();
+        }
+
+        window.renderPlayer = function() {
+            const box = document.getElementById('main-player-box');
+            if (!activeVideo) {
+                box.innerHTML = `<div class="p-12 text-center space-y-4"><h3 class="text-xl font-black text-white">مرحباً بك في منصة صحيح 🌿📖</h3></div>`;
+                return;
+            }
+
+            box.innerHTML = `
+                <div class="relative aspect-video bg-black flex items-center justify-center overflow-hidden">
+                    <video id="active-video-element" src="${activeVideo.videoUrl}" controls autoplay playsinline loop ${isMuted ? 'muted' : ''} class="w-full h-full object-contain"></video>
+                    <div class="absolute z-20 bottom-4 right-4 px-4 py-2 bg-slate-950/90 backdrop-blur-lg border border-amber-500/50 rounded-2xl shadow-2xl flex items-center gap-2 pointer-events-none">
+                      <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400 shrink-0"></i>
+                      <span class="text-amber-300 font-black text-xs">ختم موثق:</span>
+                      <span class="text-white font-extrabold text-base">${activeVideo.watermarkText || 'صحيح'}</span>
+                    </div>
+                    <button onclick="toggleMute()" class="absolute top-4 left-4 z-30 p-2.5 rounded-2xl bg-slate-950/80 text-white border border-slate-700 text-xs font-bold flex items-center gap-1.5 shadow-xl">
+                      ${isMuted ? '<i data-lucide="volume-x" class="w-4 h-4 text-rose-400"></i><span>إلغاء الكتم 🔊</span>' : '<i data-lucide="volume-2" class="w-4 h-4 text-emerald-400"></i><span>الصوت يعمل 🔊</span>'}
+                    </button>
+                </div>
+                <div class="p-6 space-y-3">
+                    <div class="flex items-center justify-between">
+                      <h2 class="text-xl font-black text-white">${activeVideo.title}</h2>
+                      <span class="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-extrabold">${activeVideo.surahName}</span>
+                    </div>
+                    <div class="flex items-center justify-between text-xs text-slate-400 border-b border-slate-800 pb-3">
+                      <span>الناشر: <strong class="text-slate-200">${activeVideo.uploader}</strong> • ${activeVideo.views} مشاهدة</span>
+                      <button onclick="deleteVideo('${activeVideo.id}')" class="p-2 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/30"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">${activeVideo.description}</p>
+                </div>`;
+            lucide.createIcons();
+        }
+
+        window.renderSidebar = function() {
+            const list = document.getElementById('videos-sidebar-list');
+            const approved = videos.filter(v => v.status === 'approved');
+            
+            list.innerHTML = approved.map(vid => `
+                <div onclick="playVideo('${vid.id}')" class="p-2.5 rounded-2xl border transition-all cursor-pointer flex gap-3 ${activeVideo?.id === vid.id ? 'bg-slate-800 border-amber-500 shadow-lg' : 'bg-slate-900 border-slate-800 hover:bg-slate-800/60'}">
+                    <div class="relative w-28 h-20 rounded-xl overflow-hidden shrink-0 bg-slate-950">
+                      <img src="${vid.thumbnail}" alt="${vid.title}" class="w-full h-full object-cover">
+                      <span class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-slate-950/90 text-[9px] font-black text-amber-300 border border-amber-500/40">صحيح</span>
+                    </div>
+                    <div class="space-y-1 flex-1">
+                      <h4 class="text-xs font-black text-white line-clamp-2">${vid.title}</h4>
+                      <div class="text-[10px] text-emerald-400 font-bold">${vid.surahName}</div>
+                      <div class="text-[10px] text-slate-400">${vid.views} مشاهدة</div>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        window.renderAuthControls = function() {
+            const ctrl = document.getElementById('auth-controls');
+            if (currentRole === 'visitor') {
+                ctrl.innerHTML = `<button onclick="openAuthModal()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs transition-all flex items-center gap-1.5"><i data-lucide="lock" class="w-3.5 h-3.5 text-amber-400"></i><span>دخول برقم الهاتف (SMS)</span></button>`;
+            } else if (currentRole === 'admin') {
+                ctrl.innerHTML = `<div class="flex items-center gap-2"><span class="px-3 py-1.5 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-black flex items-center gap-1"><i data-lucide="shield-check" class="w-4 h-4 text-amber-400"></i><span>المدير (${userName || 'صاحب الموقع'})</span></span><button onclick="logout()" class="text-[10px] text-slate-500 hover:text-rose-400 underline">خروج</button></div>`;
+            } else {
+                ctrl.innerHTML = `<div class="flex items-center gap-2"><span class="px-3 py-1.5 rounded-xl bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs font-bold">مستخدم: ${userName || userPhone}</span><button onclick="logout()" class="text-[10px] text-slate-500 hover:text-rose-400 underline">خروج</button></div>`;
+            }
+            lucide.createIcons();
+        }
+
+        window.renderAdminPanel = function() {
+            const container = document.getElementById('admin-panel-container');
+            if (currentRole !== 'admin') { container.innerHTML = ''; return; }
+            const pending = videos.filter(v => v.status === 'pending');
+            container.innerHTML = `
+                <div class="bg-slate-900 border-2 border-amber-500/40 rounded-3xl p-6 space-y-4 shadow-2xl">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div class="flex items-center gap-2"><i data-lucide="shield-check" class="w-6 h-6 text-amber-400"></i><h3 class="text-lg font-black text-white">لوحة مراجعة الفيديوهات (صاحب الموقع)</h3></div>
+                        <span class="text-xs font-bold text-slate-400">قيد الانتظار: <strong class="text-amber-400 font-mono">${pending.length}</strong></span>
+                    </div>
+                    ${pending.length === 0 ? '<p class="text-xs text-slate-400 text-center py-2">لا توجد مقاطع جديدة قيد الانتظار حالياً.</p>' : 
+                        `<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            ${pending.map(p => `
+                                <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+                                    <h4 class="text-sm font-bold text-white">${p.title}</h4>
+                                    <p class="text-[11px] text-slate-400">بواسطة: ${p.uploader}</p>
+                                    <div class="flex gap-2 pt-2">
+                                        <button onclick="approveVideo('${p.id}')" class="flex-1 py-1.5 rounded-xl bg-emerald-600 text-slate-950 font-black text-xs">قبول وبث</button>
+                                        <button onclick="rejectVideo('${p.id}')" class="py-1.5 px-3 rounded-xl bg-rose-600/20 text-rose-300 font-bold text-xs border border-rose-500/30">رفض وحذف</button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>`
+                    }
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        window.requestOtpCode = function() {
+            userName = document.getElementById('user-name-input').value.trim();
+            const phoneNumber = document.getElementById('user-phone-input').value.trim();
+            if (!phoneNumber) { alert('الرجاء إدخال رقم الهاتف بصيغة دولية صحيحة'); return; }
+            userPhone = phoneNumber;
+
+            if (userName === 'صاحب الموقع') {
+                currentRole = 'admin';
+                closeAuthModal();
+                renderAuthControls();
+                renderAdminPanel();
+                alert('مرحباً بك يا صاحب الموقع، تم تسجيل الدخول كمدير!');
+                return;
+            }
+
+            if (!window.recaptchaVerifier) {
+                window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { 'size': 'invisible' });
+            }
+            signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier)
+                .then((confirmationResult) => {
+                    confirmationResultGlobal = confirmationResult;
+                    document.getElementById('auth-step-input').classList.add('hidden');
+                    document.getElementById('auth-step-otp').classList.remove('hidden');
+                    alert('تم إرسال رمز التحقق (SMS) إلى هاتفك بنجاح!');
+                }).catch((error) => { alert('فشل إرسال الرمز، تأكد من صحة الرقم وتفعيل الخدمة.'); });
+        }
+
+        window.verifyOtpCode = function() {
+            const code = document.getElementById('otp-code-input').value.trim();
+            if (!code || code.length !== 6) { alert('أدخل رمز مكون من 6 أرقام'); return; }
+            confirmationResultGlobal.confirm(code).then(() => {
+                currentRole = 'user';
+                closeAuthModal();
+                renderAuthControls();
+                alert('تم التحقق من رقم هاتفك بنجاح!');
+            }).catch(() => { alert('رمز التحقق غير صحيح.'); });
+        }
+
+        window.approveVideo = function(id) { videos = videos.map(v => v.id === id ? { ...v, status: 'approved' } : v); renderSidebar(); renderAdminPanel(); }
+        window.rejectVideo = function(id) { videos = videos.filter(v => v.id !== id); renderSidebar(); renderAdminPanel(); }
+        window.playVideo = function(id) { const found = videos.find(v => v.id === id); if (found) { activeVideo = found; renderPlayer(); renderSidebar(); } }
+        window.toggleMute = function() { isMuted = !isMuted; renderPlayer(); }
+        window.openAuthModal = function() { document.getElementById('auth-modal').classList.remove('hidden'); }
+        window.closeAuthModal = function() { document.getElementById('auth-modal').classList.add('hidden'); }
+        window.openUploadModal = function() { document.getElementById('upload-modal').classList.remove('hidden'); }
+        window.closeUploadModal = function() { document.getElementById('upload-modal').classList.add('hidden'); }
+        window.handleMainUploadClick = function() { if (currentRole === 'visitor') openAuthModal(); else openUploadModal(); }
+        window.logout = function() { signOut(auth).then(() => { currentRole = 'visitor'; userName = ''; userPhone = ''; renderAuthControls(); renderAdminPanel(); alert('تم تسجيل الخروج.'); }); }
+
+        window.handleUploadSubmit = function(e) {
+            e.preventDefault();
+            const title = document.getElementById('upload-title-input').value;
+            const url = document.getElementById('upload-url-input').value;
+            const watermark = document.getElementById('upload-watermark-input').value;
+            const isDirectAdmin = currentRole === 'admin';
+            
+            const newVid = {
+                id: Date.now().toString(),
+                title: title,
+                surahName: 'مقطع مخصص',
+                category: 'قرآن وطبيعة',
+                views: '1',
+                uploader: isDirectAdmin ? 'صاحب الموقع (المدير)' : (userName || userPhone || 'مستخدم مسجل'),
+                thumbnail: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop&q=80',
+                videoUrl: url,
+                description: 'مقطع مرفوع بختم صحيح.',
+                watermarkText: watermark || 'صحيح',
+                status: isDirectAdmin ? 'approved' : 'pending'
+            };
+
+            videos.unshift(newVid);
+            if (isDirectAdmin) activeVideo = newVid;
+            closeUploadModal();
+            renderPlayer();
+            renderSidebar();
+            renderAdminPanel();
+            alert(isDirectAdmin ? 'تم رفع ونشر المقطع بنجاح!' : 'تم إرسال المقطع لصاحب الموقع للمراجعة!');
+        }
+
+        window.deleteVideo = function(id) {
+            videos = videos.filter(v => v.id !== id);
+            activeVideo = videos.filter(v => v.status === 'approved')[0] || null;
+            renderPlayer(); renderSidebar(); renderAdminPanel();
+        }
+
+        window.onload = window.initApp;
+    </script>
 </body>
 </html>
 
