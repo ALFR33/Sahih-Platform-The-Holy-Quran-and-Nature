@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة صحيح القرآن الكريم والطبيعة</title>
+    <title>منصة صحيح - يوتيوب التلاوات والطبيعة</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <!-- Babel for JSX -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -33,25 +33,22 @@
         const X = (props) => <i data-lucide="x" {...props}></i>;
         const Volume2 = (props) => <i data-lucide="volume-2" {...props}></i>;
         const VolumeX = (props) => <i data-lucide="volume-x" {...props}></i>;
-        const Download = (props) => <i data-lucide="download" {...props}></i>;
         const Trash2 = (props) => <i data-lucide="trash-2" {...props}></i>;
         const CheckCircle2 = (props) => <i data-lucide="check-circle-2" {...props}></i>;
+        const KeyRound = (props) => <i data-lucide="key-round" {...props}></i>;
 
         const INITIAL_VIDEOS = [
             {
                 id: "1",
                 title: "تلاوة خاشعة سورة البقرة - هدوء الطبيعة",
-                surahName: "سورة البقرة",
                 category: "قرآن وطبيعة",
-                duration: "0:45",
-                views: "340",
+                views: "1,240",
                 uploader: "صاحب الموقع (المدير)",
                 thumbnail: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop&q=80",
                 videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
                 description: "مقطع تلاوة عطرة مصحوبة بمناظر الطبيعة الخلابة مع ختم علامة صحيح الموثوقة.",
                 watermarkText: "صحيح",
-                status: "approved",
-                uploadedByEmail: "admin@sahih.com"
+                status: "approved"
             }
         ];
 
@@ -61,12 +58,18 @@
             const [isPlaying, setIsPlaying] = useState(true);
             const [isMuted, setIsMuted] = useState(true);
 
-            const [currentRole, setCurrentRole] = useState("visitor");
+            const [currentRole, setCurrentRole] = useState("visitor"); // visitor, user, admin
             const [showAuthModal, setShowAuthModal] = useState(false);
+            const [authTab, setAuthTab] = useState("user"); // "user" or "admin"
+            
+            // User states
             const [userName, setUserName] = useState("");
-            const [userEmailOrPhone, setUserEmailOrPhone] = useState("");
-            const [authOtpCode, setAuthOtpCode] = useState("");
-            const [authStep, setAuthStep] = useState("input");
+            const [userPhone, setUserPhone] = useState("");
+
+            // Admin secret login states
+            const [adminUsername, setAdminUsername] = useState("");
+            const [adminPassword, setAdminPassword] = useState("");
+            const [adminLoginError, setAdminLoginError] = useState(false);
 
             const [showAdminPanel, setShowAdminPanel] = useState(false);
             const [uploadSuccessNotice, setUploadSuccessNotice] = useState(null);
@@ -85,8 +88,9 @@
                 }, 100);
             });
 
+            // استرجاع الحفظ المحلي
             useEffect(() => {
-                const saved = localStorage.getItem("sahih_videos");
+                const saved = localStorage.getItem("sahih_videos_platform_v2");
                 if (saved) {
                     try {
                         const parsed = JSON.parse(saved);
@@ -102,10 +106,8 @@
             useEffect(() => {
                 if (videos.length > 0) {
                     try {
-                        localStorage.setItem("sahih_videos", JSON.stringify(videos));
-                    } catch (err) {
-                        // تخطي لو تجاوز حجم التخزين المحلي المسموح به
-                    }
+                        localStorage.setItem("sahih_videos_platform_v2", JSON.stringify(videos));
+                    } catch (err) {}
                 }
             }, [videos]);
 
@@ -116,23 +118,27 @@
                 }
             }, [activeVideo]);
 
-            const handleAuthSubmit = (e) => {
+            // تسجيل دخول المستخدم العادي
+            const handleUserAuth = (e) => {
                 e.preventDefault();
-                if (authStep === "input") {
-                    if (userEmailOrPhone.toLowerCase().includes("admin") || userEmailOrPhone === "صاحب الموقع") {
-                        setCurrentRole("admin");
-                        setShowAuthModal(false);
-                        setAuthStep("input");
-                        setUserEmailOrPhone("");
-                    } else {
-                        setAuthStep("otp");
-                    }
-                } else {
-                    setCurrentRole("user");
+                if (!userName.trim()) return;
+                setCurrentRole("user");
+                setShowAuthModal(false);
+            };
+
+            // تسجيل دخول المدير الخاص (بيانات سرية خاصة بك)
+            const handleAdminAuth = (e) => {
+                e.preventDefault();
+                // بيانات الدخول الخاصة بالمدير (يمكنك تعديلها هنا إن أردت)
+                if (adminUsername === "admin" && adminPassword === "sahih2026") {
+                    setCurrentRole("admin");
+                    setShowAdminPanel(true);
                     setShowAuthModal(false);
-                    setAuthStep("input");
-                    setUserEmailOrPhone("");
-                    setAuthOtpCode("");
+                    setAdminLoginError(false);
+                    setAdminUsername("");
+                    setAdminPassword("");
+                } else {
+                    setAdminLoginError(true);
                 }
             };
 
@@ -147,8 +153,7 @@
             const handleRejectVideo = (idToReject) => {
                 setVideos(prev => prev.filter(v => v.id !== idToReject));
                 if (activeVideo?.id === idToReject) {
-                    const remainingApproved = videos.filter(v => v.status === 'approved' && v.id !== idToReject);
-                    setActiveVideo(remainingApproved[0] || null);
+                    setActiveVideo(videos.find(v => v.status === 'approved' && v.id !== idToReject) || null);
                 }
             };
 
@@ -156,7 +161,7 @@
                 const updated = videos.filter(v => v.id !== idToDelete);
                 setVideos(updated);
                 if (activeVideo?.id === idToDelete) {
-                    setActiveVideo(updated[0] || null);
+                    setActiveVideo(updated.find(v => v.status === 'approved') || null);
                 }
             };
 
@@ -165,7 +170,6 @@
                 setIsPlaying(true);
             };
 
-            // معالجة اختيار الملف وقراءته كـ Base64 لضمان تشغيله بلا مشاكل
             const handleFileChange = (e) => {
                 if (e.target.files && e.target.files[0]) {
                     const file = e.target.files[0];
@@ -180,52 +184,36 @@
                 e.preventDefault();
                 if (!uploadTitle.trim()) return;
 
-                if (!selectedFile) {
-                    alert("يرجى اختيار ملف فيديو من جهازك");
-                    return;
+                let videoSource = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4";
+                if (selectedFile) {
+                    try {
+                        videoSource = URL.createObjectURL(selectedFile);
+                    } catch (err) {}
                 }
 
-                const reader = new FileReader();
-                reader.onload = function(uploadEvent) {
-                    const base64VideoUrl = uploadEvent.target.result;
-                    const isDirectAdmin = currentRole === 'admin';
-                    
-                    const newVideo = {
-                        id: Date.now().toString(),
-                        title: uploadTitle,
-                        surahName: "تلاوة ومقطع مخصص",
-                        category: uploadCategory,
-                        duration: "0:45",
-                        views: "1",
-                        uploader: isDirectAdmin ? "صاحب الموقع (المدير)" : (userName || "مستخدم مسجل"),
-                        thumbnail: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop&q=80",
-                        videoUrl: base64VideoUrl,
-                        description: `مقطع مرفوع بختم علامة "صحيح" الموثوقة.`,
-                        watermarkText: customWatermark || "صحيح",
-                        status: isDirectAdmin ? 'approved' : 'pending',
-                        uploadedByEmail: userEmailOrPhone || 'user@sahih.com'
-                    };
-
-                    setVideos(prev => [newVideo, ...prev]);
-                    if (isDirectAdmin) {
-                        setActiveVideo(newVideo);
-                    } else {
-                        setUploadSuccessNotice(`تم استلام المقطع "${uploadTitle}" بنجاح! تم إرساله إلى لوحة مراجعة صاحب الموقع.`);
-                    }
-                    setUploadTitle("");
-                    setSelectedFile(null);
-                    setShowUploadModal(false);
+                const isDirectAdmin = currentRole === 'admin';
+                const newVideo = {
+                    id: Date.now().toString(),
+                    title: uploadTitle,
+                    category: uploadCategory,
+                    views: "1",
+                    uploader: isDirectAdmin ? "صاحب الموقع (المدير)" : (userName || "مستخدم مسجل"),
+                    thumbnail: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop&q=80",
+                    videoUrl: videoSource,
+                    description: `مقطع تلاوة مرفوع بختم علامة "صحيح" الموثوقة.`,
+                    watermarkText: customWatermark || "صحيح",
+                    status: isDirectAdmin ? 'approved' : 'pending'
                 };
-                reader.readAsDataURL(selectedFile);
-            };
 
-            const handleDownloadVideo = (video) => {
-                const a = document.createElement("a");
-                a.href = video.videoUrl;
-                a.download = `${video.title}.mp4`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+                setVideos(prev => [newVideo, ...prev]);
+                if (isDirectAdmin) {
+                    setActiveVideo(newVideo);
+                } else {
+                    setUploadSuccessNotice(`تم رفع المقطع "${uploadTitle}" بنجاح! تم إرساله إلى لوحة مراجعة صاحب الموقع للموافقة عليه وبثه.`);
+                }
+                setUploadTitle("");
+                setSelectedFile(null);
+                setShowUploadModal(false);
             };
 
             const approvedVideos = videos.filter(v => v.status === 'approved');
@@ -233,27 +221,28 @@
 
             return (
                 <div className="min-h-screen w-full bg-slate-950 text-slate-100 dir-rtl text-right font-sans">
+                    
                     {/* Header Bar */}
-                    <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
+                    <header className="border-b border-slate-800 bg-slate-900/90 backdrop-blur-md sticky top-0 z-50">
                         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 via-emerald-600 to-teal-500 flex items-center justify-center font-black text-slate-950 shadow-lg">
                                     <BookOpen className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <h1 className="text-lg font-black text-white flex items-center gap-2">
-                                        <span>منصة صحيح القرآن الكريم والطبيعة</span>
+                                    <h1 className="text-base md:text-lg font-black text-white flex items-center gap-2">
+                                        <span>منصة صحيح (يوتيوب التلاوات)</span>
                                         <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-extrabold">ختم صحيح ✨</span>
                                     </h1>
-                                    <p className="text-[10px] text-slate-400">منصة المقاطع والتلاوات الخالصة بدون إعلانات</p>
+                                    <p className="text-[10px] text-slate-400">بث مباشر ومقاطع خالصة بدون إعلانات</p>
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2 md:gap-3">
                                 {currentRole === 'visitor' && (
-                                    <button onClick={() => setShowAuthModal(true)} className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs flex items-center gap-1.5">
+                                    <button onClick={() => setShowAuthModal(true)} className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs flex items-center gap-1.5 shadow">
                                         <Lock className="w-3.5 h-3.5 text-amber-400" />
-                                        <span>دخول مستخدم / مدير</span>
+                                        <span>تسجيل الدخول</span>
                                     </button>
                                 )}
 
@@ -261,7 +250,7 @@
                                     <div className="flex items-center gap-2">
                                         <span className="px-3 py-1.5 rounded-xl bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs font-bold flex items-center gap-1">
                                             <UserCheck className="w-3.5 h-3.5 text-blue-400" />
-                                            <span>مستخدم مسجل</span>
+                                            <span>مستخدم مسجل ({userName || 'زائر'})</span>
                                         </span>
                                         <button onClick={() => setCurrentRole('visitor')} className="text-[10px] text-slate-500 hover:text-rose-400 underline">خروج</button>
                                     </div>
@@ -269,43 +258,49 @@
 
                                 {currentRole === 'admin' && (
                                     <div className="flex items-center gap-2">
-                                        <button onClick={() => setShowAdminPanel(!showAdminPanel)} className="px-3 py-1.5 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-black flex items-center gap-1.5">
+                                        <button onClick={() => setShowAdminPanel(!showAdminPanel)} className="px-3.5 py-1.5 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-black flex items-center gap-1.5 shadow-md">
                                             <ShieldCheck className="w-4 h-4 text-amber-400" />
-                                            <span>لوحة المراجعة</span>
-                                            {pendingVideos.length > 0 && <span className="w-5 h-5 rounded-full bg-rose-500 text-white text-[10px] flex items-center justify-center">{pendingVideos.length}</span>}
+                                            <span>لوحة المدير</span>
+                                            {pendingVideos.length > 0 && <span className="w-5 h-5 rounded-full bg-rose-500 text-white text-[10px] flex items-center justify-center animate-pulse">{pendingVideos.length}</span>}
                                         </button>
                                         <button onClick={() => setCurrentRole('visitor')} className="text-[10px] text-slate-500 hover:text-rose-400 underline">خروج</button>
                                     </div>
                                 )}
 
-                                <button onClick={() => currentRole === 'visitor' ? setShowAuthModal(true) : setShowUploadModal(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-slate-950 font-extrabold text-xs shadow-lg">
+                                <button onClick={() => currentRole === 'visitor' ? setShowAuthModal(true) : setShowUploadModal(true)} className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-extrabold text-xs shadow-lg">
                                     <Upload className="w-4 h-4" />
-                                    <span>رفع مقطع جديد</span>
+                                    <span>رفع فيديو</span>
                                 </button>
                             </div>
                         </div>
                     </header>
 
-                    {/* Main Layout */}
+                    {/* Main Container */}
                     <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+                        
+                        {/* Admin Panel Drawer */}
                         {showAdminPanel && currentRole === 'admin' && (
                             <div className="bg-slate-900 border-2 border-amber-500/40 rounded-3xl p-6 space-y-4 shadow-2xl">
                                 <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                                    <h3 className="text-lg font-black text-white">لوحة مراجعة وتدقيق الفيديوهات</h3>
-                                    <span className="text-xs text-slate-400">قيد الانتظار: <strong className="text-amber-400">{pendingVideos.length}</strong></span>
+                                    <div className="flex items-center gap-2">
+                                        <ShieldCheck className="w-6 h-6 text-amber-400" />
+                                        <h3 className="text-base md:text-lg font-black text-white">لوحة مراجعة وقبول الفيديوهات (خاص بالمدير)</h3>
+                                    </div>
+                                    <span className="text-xs text-slate-400">بانتظار الموافقة: <strong className="text-amber-400 text-sm">{pendingVideos.length}</strong></span>
                                 </div>
                                 {pendingVideos.length === 0 ? (
-                                    <p className="text-xs text-slate-400 text-center py-4">لا توجد مقاطع قيد الانتظار.</p>
+                                    <p className="text-xs text-slate-400 text-center py-4">لا توجد مقاطع جديدة قيد الانتظار حالياً.</p>
                                 ) : (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         {pendingVideos.map((pVid) => (
                                             <div key={pVid.id} className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
                                                 <h4 className="text-sm font-extrabold text-white">{pVid.title}</h4>
-                                                <div className="flex gap-2">
-                                                    <button onClick={() => handleApproveVideo(pVid.id)} className="flex-1 py-2 rounded-xl bg-emerald-600 text-slate-950 font-black text-xs flex items-center justify-center gap-1">
-                                                        <Check className="w-4 h-4" /> قبول وبث
+                                                <p className="text-xs text-slate-400">الناشر: {pVid.uploader}</p>
+                                                <div className="flex gap-2 pt-2 border-t border-slate-900">
+                                                    <button onClick={() => handleApproveVideo(pVid.id)} className="flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black text-xs flex items-center justify-center gap-1 shadow">
+                                                        <Check className="w-4 h-4" /> قبول وبث للعامة
                                                     </button>
-                                                    <button onClick={() => handleRejectVideo(pVid.id)} className="py-2 px-4 rounded-xl bg-rose-600/20 text-rose-300 text-xs flex items-center justify-center gap-1 border border-rose-500/30">
+                                                    <button onClick={() => handleRejectVideo(pVid.id)} className="py-2 px-3 rounded-xl bg-rose-600/20 hover:bg-rose-600/40 text-rose-300 text-xs flex items-center gap-1 border border-rose-500/30">
                                                         <X className="w-4 h-4" /> رفض
                                                     </button>
                                                 </div>
@@ -316,103 +311,224 @@
                             </div>
                         )}
 
+                        {/* Player and Sidebar Layout */}
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                            
+                            {/* Main Video Section */}
                             <div className="lg:col-span-8 space-y-4">
                                 <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl">
                                     {activeVideo ? (
                                         <>
                                             <div className="relative aspect-video bg-black flex items-center justify-center overflow-hidden">
-                                                <video ref={videoRef} key={activeVideo.id} src={activeVideo.videoUrl} controls autoPlay playsInline loop muted={isMuted} className="w-full h-full object-contain" />
-                                                <div className="absolute bottom-4 right-4 z-20 px-4 py-2 bg-slate-950/90 backdrop-blur-lg border border-amber-500/50 rounded-2xl flex items-center gap-2">
+                                                <video
+                                                    ref={videoRef}
+                                                    key={activeVideo.id}
+                                                    src={activeVideo.videoUrl}
+                                                    controls
+                                                    autoPlay={isPlaying}
+                                                    playsInline
+                                                    loop
+                                                    muted={isMuted}
+                                                    className="w-full h-full object-contain"
+                                                />
+                                                {/* Watermark Badge */}
+                                                <div className="absolute bottom-4 right-4 z-20 px-4 py-2 bg-slate-950/90 backdrop-blur-lg border border-amber-500/50 rounded-2xl shadow-xl flex items-center gap-2 pointer-events-none">
                                                     <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                                                    <span className="text-amber-300 text-xs">ختم موثق:</span>
-                                                    <span className="text-white text-base font-bold">{activeVideo.watermarkText || customWatermark}</span>
+                                                    <span className="text-amber-300 text-xs font-bold">ختم موثق:</span>
+                                                    <span className="text-white text-sm font-black">{activeVideo.watermarkText || "صحيح"}</span>
                                                 </div>
-                                                <button onClick={() => setIsMuted(!isMuted)} className="absolute top-4 left-4 z-30 p-2 rounded-xl bg-slate-950/80 text-white border border-slate-700 text-xs flex items-center gap-1">
+                                                {/* Sound Toggle */}
+                                                <button onClick={() => setIsMuted(!isMuted)} className="absolute top-4 left-4 z-30 px-3 py-2 rounded-xl bg-slate-950/80 hover:bg-slate-950 text-white border border-slate-700 text-xs font-bold flex items-center gap-1.5 shadow-lg">
                                                     {isMuted ? <VolumeX className="w-4 h-4 text-rose-400" /> : <Volume2 className="w-4 h-4 text-emerald-400" />}
-                                                    <span>{isMuted ? "إلغاء الكتم" : "الصوت يعمل"}</span>
+                                                    <span>{isMuted ? "تشغيل الصوت 🔊" : "الصوت يعمل"}</span>
                                                 </button>
                                             </div>
+
                                             <div className="p-6 space-y-3">
-                                                <h2 className="text-xl font-black text-white">{activeVideo.title}</h2>
-                                                <div className="flex justify-between items-center text-xs text-slate-400 border-b border-slate-800 pb-3">
-                                                    <span>الناشر: <strong className="text-slate-200">{activeVideo.uploader}</strong></span>
-                                                    <div className="flex gap-2">
-                                                        <button onClick={() => handleDownloadVideo(activeVideo)} className="px-3 py-1.5 rounded-xl bg-emerald-600 text-slate-950 font-black text-xs flex items-center gap-1">
-                                                            <Download className="w-4 h-4" /> تنزيل
-                                                        </button>
-                                                        <button onClick={() => handleDeleteVideo(activeVideo.id)} className="p-2 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                                                <div className="flex items-center justify-between">
+                                                    <h2 className="text-lg md:text-xl font-black text-white">{activeVideo.title}</h2>
+                                                    <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-extrabold">
+                                                        {activeVideo.category}
+                                                    </span>
+                                                </div>
+
+                                                <div className="flex items-center justify-between text-xs text-slate-400 border-b border-slate-800 pb-3">
+                                                    <div className="flex items-center gap-3">
+                                                        <span>الناشر: <strong className="text-slate-200">{activeVideo.uploader}</strong></span>
+                                                        <span>• {activeVideo.views} مشاهدة</span>
+                                                    </div>
+
+                                                    {currentRole === 'admin' && (
+                                                        <button onClick={() => handleDeleteVideo(activeVideo.id)} className="p-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/40 text-rose-400 border border-rose-500/30" title="حذف الفيديو">
                                                             <Trash2 className="w-4 h-4" />
                                                         </button>
-                                                    </div>
+                                                    )}
                                                 </div>
-                                                <p className="text-xs text-slate-300">{activeVideo.description}</p>
+
+                                                <p className="text-xs text-slate-300 leading-relaxed">{activeVideo.description}</p>
                                             </div>
                                         </>
                                     ) : (
-                                        <div className="p-12 text-center space-y-4">
-                                            <h3 className="text-xl font-black text-white">لا يوجد مقطع معروض حالياً</h3>
+                                        <div className="p-12 text-center space-y-3">
+                                            <h3 className="text-lg font-black text-white">لا توجد مقاطع معروضة حالياً</h3>
+                                            <p className="text-xs text-slate-400">قم برفع أول مقطع فيديو للمنصة.</p>
                                         </div>
                                     )}
                                 </div>
                             </div>
 
+                            {/* Sidebar Video Feed */}
                             <div className="lg:col-span-4 space-y-3">
-                                <h3 className="text-sm font-black text-white px-1">قائمة التلاوات والمقاطع المبثوثة</h3>
-                                <div className="space-y-3">
-                                    {approvedVideos.map((vid) => (
-                                        <div key={vid.id} onClick={() => handlePlayVideo(vid)} className={`p-2.5 rounded-2xl border cursor-pointer flex gap-3 ${activeVideo?.id === vid.id ? 'bg-slate-800 border-amber-500' : 'bg-slate-900 border-slate-800'}`}>
-                                            <img src={vid.thumbnail} alt={vid.title} className="w-28 h-20 rounded-xl object-cover bg-slate-950" />
-                                            <div className="space-y-1 flex-1">
-                                                <h4 className="text-xs font-black text-white line-clamp-2">{vid.title}</h4>
-                                                <div className="text-[10px] text-emerald-400">{vid.category}</div>
+                                <h3 className="text-sm font-black text-white px-1 flex items-center justify-between">
+                                    <span>المقاطع والتلاوات المتاحة</span>
+                                    <span className="text-xs text-emerald-400 font-bold">بدون إعلانات ✨</span>
+                                </h3>
+
+                                {approvedVideos.length === 0 ? (
+                                    <div className="p-6 text-center border border-dashed border-slate-800 rounded-2xl text-slate-500 text-xs">
+                                        لا توجد مقاطع مقبولة حالياً.
+                                    </div>
+                                ) : (
+                                    <div className="space-y-3">
+                                        {approvedVideos.map((vid) => (
+                                            <div
+                                                key={vid.id}
+                                                onClick={() => handlePlayVideo(vid)}
+                                                className={`p-2.5 rounded-2xl border transition-all cursor-pointer flex gap-3 ${
+                                                    activeVideo?.id === vid.id ? 'bg-slate-800 border-amber-500 shadow-lg' : 'bg-slate-900 border-slate-800 hover:bg-slate-800/60'
+                                                }`}
+                                            >
+                                                <div className="relative w-28 h-20 rounded-xl overflow-hidden shrink-0 bg-slate-950">
+                                                    <img src={vid.thumbnail} alt={vid.title} className="w-full h-full object-cover" />
+                                                    <span className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-slate-950/90 text-[9px] font-black text-amber-300 border border-amber-500/40">
+                                                        صحيح
+                                                    </span>
+                                                </div>
+
+                                                <div className="space-y-1 flex-1">
+                                                    <h4 className="text-xs font-black text-white line-clamp-2">{vid.title}</h4>
+                                                    <div className="text-[10px] text-emerald-400 font-bold">{vid.category}</div>
+                                                    <div className="text-[10px] text-slate-400">{vid.views} مشاهدة</div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
-                                </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
+
                         </div>
                     </main>
 
-                    {/* Notice Modal */}
+                    {/* Success Notice Modal */}
                     {uploadSuccessNotice && (
                         <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
-                            <div className="bg-slate-900 border border-emerald-500/50 rounded-3xl p-6 max-w-md w-full space-y-4 text-center">
-                                <h3 className="text-lg font-black text-white">تم إرسال المقطع للمراجعة! 📥</h3>
-                                <p className="text-xs text-slate-300">{uploadSuccessNotice}</p>
-                                <button onClick={() => { setCurrentRole("admin"); setShowAdminPanel(true); setUploadSuccessNotice(null); }} className="w-full py-3 rounded-2xl bg-amber-500 text-slate-950 font-black text-xs">
-                                    الدخول كـ (صاحب الموقع) للموافقة على المقطع ➔
+                            <div className="bg-slate-900 border border-emerald-500/50 rounded-3xl p-6 max-w-md w-full space-y-4 text-center shadow-2xl">
+                                <h3 className="text-base font-black text-white">تم استلام المقطع بنجاح! 📥</h3>
+                                <p className="text-xs text-slate-300 bg-slate-950 p-3 rounded-2xl border border-slate-800 leading-relaxed">
+                                    {uploadSuccessNotice}
+                                </p>
+                                <button onClick={() => setUploadSuccessNotice(null)} className="w-full py-2.5 rounded-2xl bg-slate-800 text-slate-300 text-xs font-bold">
+                                    حسناً، إغلاق
                                 </button>
                             </div>
                         </div>
                     )}
 
-                    {/* Auth Modal */}
+                    {/* Dual Auth Modal (User / Admin Secret Login) */}
                     {showAuthModal && (
                         <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
-                            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full space-y-4">
-                                <div className="flex justify-between items-center border-b border-slate-800 pb-3">
-                                    <h3 className="text-base font-black text-white">تسجيل الدخول / مدير الموقع</h3>
-                                    <button onClick={() => setShowAuthModal(false)} className="text-slate-400"><X className="w-5 h-5" /></button>
+                            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl">
+                                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                                    <h3 className="text-base font-black text-white flex items-center gap-2">
+                                        <Lock className="w-4 h-4 text-amber-400" />
+                                        <span>بوابة تسجيل الدخول</span>
+                                    </h3>
+                                    <button onClick={() => setShowAuthModal(false)} className="text-slate-400 hover:text-white"><X className="w-5 h-5" /></button>
                                 </div>
-                                <form onSubmit={handleAuthSubmit} className="space-y-4">
-                                    {authStep === "input" ? (
-                                        <>
-                                            <div>
-                                                <label className="text-xs text-slate-400 block mb-1">اسم المستخدم:</label>
-                                                <input type="text" value={userName} onChange={(e) => setUserName(e.target.value)} placeholder="اسمك أو قناتك..." className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs text-white mb-3" />
-                                                <label className="text-xs text-slate-400 block mb-1">رقم الجوال أو البريد (أو اكتب 'صاحب الموقع'):</label>
-                                                <input type="text" value={userEmailOrPhone} onChange={(e) => setUserEmailOrPhone(e.target.value)} placeholder="اكتب 'صاحب الموقع' للدخول المشرف..." className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs text-white" required />
+
+                                {/* Tabs for User vs Admin */}
+                                <div className="flex bg-slate-950 p-1 rounded-2xl border border-slate-800">
+                                    <button
+                                        onClick={() => setAuthTab("user")}
+                                        className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${authTab === 'user' ? 'bg-slate-800 text-white shadow' : 'text-slate-400'}`}
+                                    >
+                                        تسجيل مستخدم جديد
+                                    </button>
+                                    <button
+                                        onClick={() => setAuthTab("admin")}
+                                        className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1 ${authTab === 'admin' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'text-slate-400'}`}
+                                    >
+                                        <KeyRound className="w-3.5 h-3.5" />
+                                        <span>دخول المدير (خاص)</span>
+                                    </button>
+                                </div>
+
+                                {authTab === "user" ? (
+                                    <form onSubmit={handleUserAuth} className="space-y-3 pt-2">
+                                        <div>
+                                            <label className="text-xs font-bold text-slate-400 block mb-1">اسمك أو اسم قناتك:</label>
+                                            <input
+                                                type="text"
+                                                value={userName}
+                                                onChange={(e) => setUserName(e.target.value)}
+                                                placeholder="مثال: القارئ أحمد..."
+                                                className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs text-white focus:border-amber-500 outline-none"
+                                                required
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-xs font-bold text-slate-400 block mb-1">رقم الهاتف (اختياري):</label>
+                                            <input
+                                                type="text"
+                                                value={userPhone}
+                                                onChange={(e) => setUserPhone(e.target.value)}
+                                                placeholder="05xxxxxxxx"
+                                                className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs text-white focus:border-amber-500 outline-none"
+                                            />
+                                        </div>
+                                        <button type="submit" className="w-full py-3 rounded-2xl bg-blue-600 hover:bg-blue-500 text-slate-950 font-black text-xs shadow">
+                                            دخول للمنصة كـ مستخدم ➔
+                                        </button>
+                                    </form>
+                                ) : (
+                                    <form onSubmit={handleAdminAuth} className="space-y-3 pt-2">
+                                        <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-[11px] text-amber-200">
+                                            ⚠️ هذه البوابة مخصصة حصرياً لمدير الموقع (صاحب الموقع) لتسجيل الدخول بلوحة التحكم ومراجعة الفيديوهات.
+                                        </div>
+
+                                        {adminLoginError && (
+                                            <div className="p-2.5 rounded-xl bg-rose-500/20 border border-rose-500/30 text-rose-300 text-[11px] text-center font-bold">
+                                                اسم المستخدم أو كلمة المرور غير صحيحة!
                                             </div>
-                                            <button type="submit" className="w-full py-3 rounded-2xl bg-amber-500 text-slate-950 font-black text-xs">متابعة</button>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <input type="text" maxLength={6} value={authOtpCode} onChange={(e) => setAuthOtpCode(e.target.value)} placeholder="رمز التحقق (6 أرقام)..." className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs text-center text-emerald-400 font-bold" required />
-                                            <button type="submit" className="w-full py-3 rounded-2xl bg-emerald-600 text-slate-950 font-black text-xs">تأكيد والدخول</button>
-                                        </>
-                                    )}
-                                </form>
+                                        )}
+
+                                        <div>
+                                            <label className="text-xs font-bold text-slate-400 block mb-1">اسم مستخدم المدير:</label>
+                                            <input
+                                                type="text"
+                                                value={adminUsername}
+                                                onChange={(e) => setAdminUsername(e.target.value)}
+                                                placeholder="اسم المستخدم..."
+                                                className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs text-white focus:border-amber-500 outline-none"
+                                                required
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-xs font-bold text-slate-400 block mb-1">كلمة المرور السرية:</label>
+                                            <input
+                                                type="password"
+                                                value={adminPassword}
+                                                onChange={(e) => setAdminPassword(e.target.value)}
+                                                placeholder="كلمة المرور الخاصة..."
+                                                className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs text-white focus:border-amber-500 outline-none"
+                                                required
+                                            />
+                                        </div>
+                                        <button type="submit" className="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg">
+                                            تسجيل دخول المدير ➔
+                                        </button>
+                                    </form>
+                                )}
                             </div>
                         </div>
                     )}
@@ -420,24 +536,80 @@
                     {/* Upload Modal */}
                     {showUploadModal && (
                         <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
-                            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full space-y-4">
-                                <div className="flex justify-between items-center border-b border-slate-800 pb-3">
+                            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl">
+                                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
                                     <h3 className="text-base font-black text-white">رفع مقطع فيديو جديد بختم "صحيح"</h3>
-                                    <button onClick={() => setShowUploadModal(false)} className="text-slate-400"><X className="w-5 h-5" /></button>
+                                    <button onClick={() => setShowUploadModal(false)} className="text-slate-400 hover:text-white"><X className="w-5 h-5" /></button>
                                 </div>
+
                                 <form onSubmit={handleUpload} className="space-y-3">
                                     <div>
-                                        <label className="text-xs text-slate-400 block mb-1">اختر ملف فيديو:</label>
-                                        <input type="file" accept="video/*" onChange={handleFileChange} className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 text-xs text-slate-300" required />
-                                        {selectedFile && <span className="text-[10px] text-emerald-400 block mt-1">تم إرفاق: {selectedFile.name}</span>}
+                                        <label className="text-xs font-bold text-slate-400 block mb-1">اختر ملف الفيديو من جهازك:</label>
+                                        <input
+                                            type="file"
+                                            accept="video/*"
+                                            onChange={handleFileChange}
+                                            className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-300 cursor-pointer file:ml-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-emerald-600 file:text-slate-950"
+                                            required
+                                        />
+                                        {selectedFile && <span className="text-[10px] text-emerald-400 font-bold block mt-1">تم اختيار: {selectedFile.name}</span>}
                                     </div>
-                                    <input type="text" value={uploadTitle} onChange={(e) => setUploadTitle(e.target.value)} placeholder="عنوان المقطع أو السورة..." className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white" required />
-                                    <input type="text" value={customWatermark} onChange={(e) => setCustomWatermark(e.target.value)} placeholder="نص العلامة (صحيح)" className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white" />
-                                    <button type="submit" className="w-full py-3 rounded-2xl bg-emerald-600 text-slate-950 font-black text-xs">رفع المقطع الآن</button>
+
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-400 block mb-1">عنوان المقطع أو السورة:</label>
+                                        <input
+                                            type="text"
+                                            value={uploadTitle}
+                                            onChange={(e) => setUploadTitle(e.target.value)}
+                                            placeholder="أدخل العنوان..."
+                                            className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:border-amber-500 outline-none"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-400 block mb-1">التصنيف:</label>
+                                        <select
+                                            value={uploadCategory}
+                                            onChange={(e) => setUploadCategory(e.target.value)}
+                                            className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:border-amber-500 outline-none"
+                                        >
+                                            <option value="قرآن وطبيعة">قرآن وطبيعة</option>
+                                            <option value="تلاوات خاشعة">تلاوات خاشعة</option>
+                                            <option value="أذكار وأدعية">أذكار وأدعية</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-400 block mb-1">نص العلامة الختمية:</label>
+                                        <input
+                                            type="text"
+                                            value={customWatermark}
+                                            onChange={(e) => setCustomWatermark(e.target.value)}
+                                            placeholder="صحيح"
+                                            className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:border-amber-500 outline-none"
+                                        />
+                                    </div>
+
+                                    {currentRole !== 'admin' && (
+                                        <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-200 text-[11px] font-bold">
+                                            ملاحظة: سيتم إرسال المقطع لصاحب الموقع للمراجعة والتدقيق قبل نشره للعموم.
+                                        </div>
+                                    )}
+
+                                    <div className="flex gap-2 pt-2">
+                                        <button type="submit" className="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black text-xs shadow">
+                                            رفع المقطع الآن
+                                        </button>
+                                        <button type="button" onClick={() => setShowUploadModal(false)} className="w-full py-3 rounded-2xl bg-slate-800 text-slate-300 font-bold text-xs">
+                                            إلغاء
+                                        </button>
+                                    </div>
                                 </form>
                             </div>
                         </div>
                     )}
+
                 </div>
             );
         }
