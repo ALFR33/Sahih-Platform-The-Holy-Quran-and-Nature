@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>منصة صحيح القرآن الكريم والطبيعة</title>
+    <!-- Google AdMob Script -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-app-pub-2244311957196913" crossorigin="anonymous"></script>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
@@ -27,7 +29,7 @@
                 <span>منصة صحيح القرآن الكريم والطبيعة</span>
                 <span class="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-extrabold">ختم صحيح ✨</span>
               </h1>
-              <p class="text-[10px] text-slate-400">منصة المقاطع والتلاوات الخالصة بدون إعلانات</p>
+              <p class="text-[10px] text-slate-400">منصة المقاطع والتلاوات الخالصة بدون إعلانات مزعجة</p>
             </div>
           </div>
 
@@ -59,6 +61,20 @@
           <!-- Main Video Stream -->
           <div class="lg:col-span-8 space-y-4">
             <div class="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl" id="main-player-box"></div>
+
+            <!-- AdMob Banner Container Area (Updated with your exact Ad Unit ID) -->
+            <div class="bg-slate-900/50 border border-slate-800 rounded-2xl p-4 text-center">
+                <div class="text-[10px] text-slate-500 mb-1">إعلان تجاري موجه لرفع الأرباح</div>
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="ca-app-pub-2244311957196913"
+                     data-ad-slot="1262486446"
+                     data-ad-format="auto"
+                     data-full-width-responsive="true"></ins>
+                <script>
+                     (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+            </div>
           </div>
 
           <!-- Videos Grid Sidebar -->
@@ -148,7 +164,6 @@
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
         import { getAuth, RecaptchaVerifier, signInWithPhoneNumber, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        // Firebase Configuration الخاصة بمشروعك
         const firebaseConfig = {
           apiKey: "AIzaSyAChzyVbI2tYZH54i1bkaLqOkA8awbtXNs",
           authDomain: "gen-lang-client-0231249972.firebaseapp.com",
@@ -163,7 +178,7 @@
         const analytics = getAnalytics(app);
         const auth = getAuth(app);
 
-        let currentRole = 'visitor'; // visitor, user, admin
+        let currentRole = 'visitor';
         let userName = '';
         let userPhone = '';
         let confirmationResultGlobal = null;
@@ -178,7 +193,7 @@
                 uploader: 'صاحب الموقع (المدير)',
                 thumbnail: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop&q=80',
                 videoUrl: 'https://vjs.zencdn.net/v/oceans.mp4',
-                description: 'مقطع تلاوة عطرة مرفوع بختم علامة صحيح الموثوقة بدون إعلانات.',
+                description: 'مقطع تلاوة عطرة مرفوع بختم علامة صحيح الموثوقة بدون إعلانات مزعجة.',
                 watermarkText: 'صحيح',
                 status: 'approved'
             }
@@ -313,7 +328,6 @@
             lucide.createIcons();
         }
 
-        // إرسال رمز الـ SMS عبر Firebase Phone Auth
         window.requestOtpCode = function() {
             userName = document.getElementById('user-name-input').value.trim();
             const phoneNumber = document.getElementById('user-phone-input').value.trim();
@@ -334,7 +348,6 @@
                 return;
             }
 
-            // إعداد reCAPTCHA المخفي تلقائياً
             if (!window.recaptchaVerifier) {
                 window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
                     'size': 'invisible'
@@ -354,7 +367,6 @@
                 });
         }
 
-        // تأكيد رمز الـ SMS المكون من 6 أرقام
         window.verifyOtpCode = function() {
             const code = document.getElementById('otp-code-input').value.trim();
             if (!code || code.length !== 6) {
