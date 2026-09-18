@@ -24,7 +24,6 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
         
-        // أيقونات Lucide مبسطة للاستخدام المباشر داخل المتصفح
         const BookOpen = (props) => <i data-lucide="book-open" {...props}></i>;
         const Lock = (props) => <i data-lucide="lock" {...props}></i>;
         const UserCheck = (props) => <i data-lucide="user-check" {...props}></i>;
@@ -37,7 +36,6 @@
         const Download = (props) => <i data-lucide="download" {...props}></i>;
         const Trash2 = (props) => <i data-lucide="trash-2" {...props}></i>;
         const CheckCircle2 = (props) => <i data-lucide="check-circle-2" {...props}></i>;
-        const Smartphone = (props) => <i data-lucide="smartphone" {...props}></i>;
 
         const INITIAL_VIDEOS = [
             {
@@ -51,7 +49,6 @@
                 thumbnail: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop&q=80",
                 videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
                 description: "مقطع تلاوة عطرة مصحوبة بمناظر الطبيعة الخلابة مع ختم علامة صحيح الموثوقة.",
-                likes: 45,
                 watermarkText: "صحيح",
                 status: "approved",
                 uploadedByEmail: "admin@sahih.com"
@@ -63,11 +60,9 @@
             const [activeVideo, setActiveVideo] = useState(INITIAL_VIDEOS[0]);
             const [isPlaying, setIsPlaying] = useState(true);
             const [isMuted, setIsMuted] = useState(true);
-            const [videoError, setVideoError] = useState(false);
 
             const [currentRole, setCurrentRole] = useState("visitor");
             const [showAuthModal, setShowAuthModal] = useState(false);
-            const [selectedCountryCode, setSelectedCountryCode] = useState("+970");
             const [userName, setUserName] = useState("");
             const [userEmailOrPhone, setUserEmailOrPhone] = useState("");
             const [authOtpCode, setAuthOtpCode] = useState("");
@@ -79,7 +74,6 @@
             const [uploadTitle, setUploadTitle] = useState("");
             const [uploadCategory, setUploadCategory] = useState("قرآن وطبيعة");
             const [customWatermark, setCustomWatermark] = useState("صحيح");
-            const [watermarkPos, setWatermarkPos] = useState("bottom-right");
             const [selectedFile, setSelectedFile] = useState(null);
             const [showUploadModal, setShowUploadModal] = useState(false);
 
@@ -87,9 +81,7 @@
 
             useEffect(() => {
                 setTimeout(() => {
-                    if (window.lucide) {
-                        window.lucide.createIcons();
-                    }
+                    if (window.lucide) window.lucide.createIcons();
                 }, 100);
             });
 
@@ -109,7 +101,11 @@
 
             useEffect(() => {
                 if (videos.length > 0) {
-                    localStorage.setItem("sahih_videos", JSON.stringify(videos));
+                    try {
+                        localStorage.setItem("sahih_videos", JSON.stringify(videos));
+                    } catch (err) {
+                        // تخطي لو تجاوز حجم التخزين المحلي المسموح به
+                    }
                 }
             }, [videos]);
 
@@ -167,9 +163,9 @@
             const handlePlayVideo = (video) => {
                 setActiveVideo(video);
                 setIsPlaying(true);
-                setVideoError(false);
             };
 
+            // معالجة اختيار الملف وقراءته كـ Base64 لضمان تشغيله بلا مشاكل
             const handleFileChange = (e) => {
                 if (e.target.files && e.target.files[0]) {
                     const file = e.target.files[0];
@@ -184,52 +180,52 @@
                 e.preventDefault();
                 if (!uploadTitle.trim()) return;
 
-                let videoUrlToUse = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4";
-                if (selectedFile) {
-                    try {
-                        videoUrlToUse = URL.createObjectURL(selectedFile);
-                    } catch (err) {}
+                if (!selectedFile) {
+                    alert("يرجى اختيار ملف فيديو من جهازك");
+                    return;
                 }
 
-                const isDirectAdmin = currentRole === 'admin';
-                const newVideo = {
-                    id: Date.now().toString(),
-                    title: uploadTitle,
-                    surahName: "تلاوة ومقطع مخصص",
-                    category: uploadCategory,
-                    duration: "0:45",
-                    views: "1",
-                    uploader: isDirectAdmin ? "صاحب الموقع (المدير)" : (userName || "مستخدم مسجل"),
-                    thumbnail: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop&q=80",
-                    videoUrl: videoUrlToUse,
-                    description: `مقطع مرفوع بختم علامة "صحيح" الموثوقة`,
-                    likes: 1,
-                    watermarkText: customWatermark || "صحيح",
-                    status: isDirectAdmin ? 'approved' : 'pending',
-                    uploadedByEmail: userEmailOrPhone || 'user@sahih.com'
+                const reader = new FileReader();
+                reader.onload = function(uploadEvent) {
+                    const base64VideoUrl = uploadEvent.target.result;
+                    const isDirectAdmin = currentRole === 'admin';
+                    
+                    const newVideo = {
+                        id: Date.now().toString(),
+                        title: uploadTitle,
+                        surahName: "تلاوة ومقطع مخصص",
+                        category: uploadCategory,
+                        duration: "0:45",
+                        views: "1",
+                        uploader: isDirectAdmin ? "صاحب الموقع (المدير)" : (userName || "مستخدم مسجل"),
+                        thumbnail: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop&q=80",
+                        videoUrl: base64VideoUrl,
+                        description: `مقطع مرفوع بختم علامة "صحيح" الموثوقة.`,
+                        watermarkText: customWatermark || "صحيح",
+                        status: isDirectAdmin ? 'approved' : 'pending',
+                        uploadedByEmail: userEmailOrPhone || 'user@sahih.com'
+                    };
+
+                    setVideos(prev => [newVideo, ...prev]);
+                    if (isDirectAdmin) {
+                        setActiveVideo(newVideo);
+                    } else {
+                        setUploadSuccessNotice(`تم استلام المقطع "${uploadTitle}" بنجاح! تم إرساله إلى لوحة مراجعة صاحب الموقع.`);
+                    }
+                    setUploadTitle("");
+                    setSelectedFile(null);
+                    setShowUploadModal(false);
                 };
-
-                setVideos([newVideo, ...videos]);
-                if (isDirectAdmin) {
-                    setActiveVideo(newVideo);
-                } else {
-                    setUploadSuccessNotice(`تم استلام المقطع "${uploadTitle}" بنجاح! تم حظره مؤقتاً وإرساله إلى لوحة مراجعة صاحب الموقع.`);
-                }
-                setIsPlaying(true);
-                setUploadTitle("");
-                setSelectedFile(null);
-                setShowUploadModal(false);
+                reader.readAsDataURL(selectedFile);
             };
 
-            const handleDownloadVideo = async (video) => {
-                try {
-                    const a = document.createElement("a");
-                    a.href = video.videoUrl;
-                    a.download = `${video.title || 'فيديو-صحيح'}.mp4`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                } catch (err) {}
+            const handleDownloadVideo = (video) => {
+                const a = document.createElement("a");
+                a.href = video.videoUrl;
+                a.download = `${video.title}.mp4`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
             };
 
             const approvedVideos = videos.filter(v => v.status === 'approved');
@@ -378,6 +374,19 @@
                         </div>
                     </main>
 
+                    {/* Notice Modal */}
+                    {uploadSuccessNotice && (
+                        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+                            <div className="bg-slate-900 border border-emerald-500/50 rounded-3xl p-6 max-w-md w-full space-y-4 text-center">
+                                <h3 className="text-lg font-black text-white">تم إرسال المقطع للمراجعة! 📥</h3>
+                                <p className="text-xs text-slate-300">{uploadSuccessNotice}</p>
+                                <button onClick={() => { setCurrentRole("admin"); setShowAdminPanel(true); setUploadSuccessNotice(null); }} className="w-full py-3 rounded-2xl bg-amber-500 text-slate-950 font-black text-xs">
+                                    الدخول كـ (صاحب الموقع) للموافقة على المقطع ➔
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Auth Modal */}
                     {showAuthModal && (
                         <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
@@ -413,14 +422,18 @@
                         <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
                             <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full space-y-4">
                                 <div className="flex justify-between items-center border-b border-slate-800 pb-3">
-                                    <h3 className="text-base font-black text-white">رفع مقطع فيديو جديد</h3>
+                                    <h3 className="text-base font-black text-white">رفع مقطع فيديو جديد بختم "صحيح"</h3>
                                     <button onClick={() => setShowUploadModal(false)} className="text-slate-400"><X className="w-5 h-5" /></button>
                                 </div>
                                 <form onSubmit={handleUpload} className="space-y-3">
-                                    <input type="file" accept="video/*" onChange={handleFileChange} className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 text-xs text-slate-300" required />
-                                    <input type="text" value={uploadTitle} onChange={(e) => setUploadTitle(e.target.value)} placeholder="عنوان المقطع..." className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white" required />
+                                    <div>
+                                        <label className="text-xs text-slate-400 block mb-1">اختر ملف فيديو:</label>
+                                        <input type="file" accept="video/*" onChange={handleFileChange} className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 text-xs text-slate-300" required />
+                                        {selectedFile && <span className="text-[10px] text-emerald-400 block mt-1">تم إرفاق: {selectedFile.name}</span>}
+                                    </div>
+                                    <input type="text" value={uploadTitle} onChange={(e) => setUploadTitle(e.target.value)} placeholder="عنوان المقطع أو السورة..." className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white" required />
                                     <input type="text" value={customWatermark} onChange={(e) => setCustomWatermark(e.target.value)} placeholder="نص العلامة (صحيح)" className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white" />
-                                    <button type="submit" className="w-full py-3 rounded-2xl bg-emerald-600 text-slate-950 font-black text-xs">رفع الآن</button>
+                                    <button type="submit" className="w-full py-3 rounded-2xl bg-emerald-600 text-slate-950 font-black text-xs">رفع المقطع الآن</button>
                                 </form>
                             </div>
                         </div>
